@@ -1,5 +1,5 @@
 /* Azm service worker: app shell offline, videos cached on first play, range requests served from cache (iOS video). */
-const V='azm-20261107003424', VIDS='azm-videos';
+const V='azm-20261107004351', VIDS='azm-videos';
 const SHELL=['./','./index.html','./manifest.webmanifest','./img/base_front.webp','./img/base_back.webp','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
@@ -15,10 +15,11 @@ async function rangeFrom(res,range){
 }
 
 async function video(req){
-  const url=new URL(req.url);url.search='';const key=url.href;
+  const url=new URL(req.url);const key=url.href;
   const c=await caches.open(VIDS);let hit=await c.match(key);
   if(!hit){
-    try{const full=await fetch(key);if(full.ok&&full.status===200){await c.put(key,full.clone());hit=full}else return fetch(req)}
+    try{const full=await fetch(key,{cache:'no-cache'});if(full.ok&&full.status===200){await c.put(key,full.clone());hit=full;
+      for(const k of await c.keys()){const ku=new URL(k.url);if(ku.pathname===url.pathname&&ku.href!==key)await c.delete(k)}}else return fetch(req)}
     catch(e){return fetch(req)}
   }
   const range=req.headers.get('range');
