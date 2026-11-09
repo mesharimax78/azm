@@ -1178,13 +1178,14 @@ const SH=$('#sheet');
 function openSheet(html){SH.innerHTML=`<div class="sheet-in">${html}</div>`;SH.hidden=false;SH.scrollTop=0}
 function closeSheet(){SH.hidden=true;SH.innerHTML='';pickCb=null}
 let pickCb=null,pickM='all',pickS='all',pickE='all';
-function openPicker(cb){pickCb=cb;pickM='all';pickS='all';pickE='all';openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="pick-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('pickT')}</h2></div></div>
+let pickMem=null;function pickSave(){if(!$('#pick-list'))return;pickMem={m:pickM,s:pickS,e:pickE,q:$('#pick-q')?.value||'',sc:SH.scrollTop}}
+function openPicker(cb){pickCb=cb;const pm=pickMem;pickM=pm?pm.m:'all';pickS=pm?pm.s:'all';pickE=pm?pm.e:'all';openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="pick-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('pickT')}</h2></div></div>
   <input class="field" id="pick-q" placeholder="${t('search')}" autocomplete="off">
   <div class="chips" id="pick-chips"></div><div class="chips sub" id="pick-sub" hidden></div><div id="pick-list"></div>
   <details class="list"><summary class="item"><span class="grow t">${t('missing')}</span><span class="link">+</span></summary><div class="hist-body">
   <input class="field" id="cx-name" placeholder="${t('exPh')}"><select class="field" id="cx-m">${Object.entries(SUB).map(([k,v])=>`<option value="${k}">${L(MUS[v.g])} · ${L(v)}</option>`).join('')}</select>
   <select class="field" id="cx-eq">${Object.entries(EQ).map(([k,v])=>`<option value="${k}">${L(v)}</option>`).join('')}</select>
-  <button class="btn primary" data-act="cx-add">${t('addPick')}</button></div></details>`);renderPick()}
+  <button class="btn primary" data-act="cx-add">${t('addPick')}</button></div></details>`);if(pm&&pm.q)$('#pick-q').value=pm.q;renderPick();if(pm){const sc=pm.sc;SH.scrollTop=sc;requestAnimationFrame(()=>{SH.scrollTop=sc})}}
 function renderPick(){
   const q=($('#pick-q')?.value||'').trim().toLowerCase();
   // one flat row: every specific muscle is its own category
@@ -1572,14 +1573,14 @@ document.addEventListener('click',async ev=>{
   case 'rest-add':restEnd+=(+b.dataset.v)*1000;restDur=Math.max(restDur+(+b.dataset.v),15);if(restEnd<=Date.now()){restEnd=0;$('#rest').hidden=true}tick();break;
   case 'rest-skip':restEnd=0;$('#rest').hidden=true;break;
   case 'rest-set':S.profile.settings.rest=+b.dataset.v;saveProfile();openSettings();toast(t('restSet',b.textContent));break;
-  case 'pick-close':closeSheet();if(ed)renderEditor();break;
-  case 'pick-info':openInfo(b.dataset.id,true);break;
+  case 'pick-close':pickSave();closeSheet();if(ed)renderEditor();break;
+  case 'pick-info':pickSave();openInfo(b.dataset.id,true);break;
   case 'ex-info':openInfo(b.dataset.id,false);break;
   case 'info-close':if(infoFromPick){const cb=pickCb;openPicker(cb)}else closeSheet();break;
   case 'pick-m':pickM=b.dataset.v;renderPick();$('#pick-list').scrollIntoView&&SH.scrollTo({top:0});break;
   case 'pick-s':pickS=b.dataset.v;renderPick();break;
   case 'pick-e':pickE=b.dataset.v;renderPick();break;
-  case 'pick':{const cb=pickCb;closeSheet();if(ed)renderEditor();cb&&cb(b.dataset.id);break}
+  case 'pick':{const cb=pickCb;pickSave();closeSheet();if(ed)renderEditor();cb&&cb(b.dataset.id);break}
   case 'cx-add':{const n=$('#cx-name').value.trim();if(!n){toast(t('exNameReq'));break}const sk=$('#cx-m').value;const eq=$('#cx-eq').value;const x={id:gid('cx'),n,m:SUB[sk]?SUB[sk].g:sk,sub:sk,eq,bb:eq==='barbell'||eq==='ez',...(sk==='cardio'?{cd:1}:{})};
     S.profile.customEx=(S.profile.customEx||[]).concat(x);saveProfile();const cb=pickCb;closeSheet();if(ed)renderEditor();cb&&cb(x.id);break}
   case 'sheet-close':closeSheet();break;

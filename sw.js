@@ -1,5 +1,5 @@
 /* Azm service worker: app shell offline, videos cached on first play, range requests served from cache (iOS video). */
-const V='azm-20261110005117', VIDS='azm-videos';
+const V='azm-20261110010229', VIDS='azm-videos';
 const SHELL=['./','./index.html','./manifest.webmanifest','./img/base_front.webp','./img/base_back.webp','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
