@@ -1,0 +1,30 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>عزم · التقويم</title>
+<style>
+:root{color-scheme:light dark;--bg:#f1f2ee;--fg:#16191c;--mut:#5d645c;--acc:#b5600c;--card:#fff;--line:#d6d9d1}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1114;--fg:#ecebe6;--mut:#9aa09b;--acc:#f0a33a;--card:#181b1f;--line:#2d3238}}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.6 -apple-system,"IBM Plex Sans Arabic",Tahoma,sans-serif;padding:28px max(18px,env(safe-area-inset-left))}
+h1{font-size:24px;margin:0 0 6px}p{color:var(--mut);margin:0 0 18px}
+a.b{display:block;text-align:center;text-decoration:none;font-weight:600;padding:15px;border-radius:14px;margin-bottom:12px;background:var(--acc);color:#fff}
+a.b.s{background:var(--card);color:var(--fg);border:1px solid var(--line)}
+ol{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 34px 12px 14px;margin:0 0 18px}li{margin:3px 0}
+.n{color:var(--mut);font-size:14px}
+</style></head><body>
+<h1 id="h">أضف للتقويم</h1>
+<p id="d">اضغط الزر، وبعدها اختر "إضافة الكل".</p>
+<ol id="l"></ol>
+<a class="b" id="a1" href="#">إضافة إلى التقويم</a>
+<a class="b s" id="a2" href="#">ما فتح؟ نزّل الملف</a>
+<a class="b s" href="./">رجوع للتطبيق</a>
+<p class="n" id="n">إذا نزّلته: افتح التنزيلات، اضغط على الملف، ثم "إضافة الكل". بعدها ارجع للتطبيق.</p>
+<script>
+{const q=location.hash.slice(1);let txt='',name='azm.ics';
+ try{const o=JSON.parse(decodeURIComponent(q));txt=o.t;name=o.n||name}catch(e){}
+ if(!txt){document.getElementById('h').textContent='ما فيه بيانات';document.getElementById('d').textContent='ارجع للتطبيق واضغط "أضفه للتقويم" مرة ثانية.';['a1','a2','n','l'].forEach(i=>document.getElementById(i).hidden=true)}
+ else{
+  const ev=[...txt.matchAll(/SUMMARY:(.*)\r?\n/g)].map(m=>m[1].replace(/\\([,;\\])/g,'$1'));
+  const ds=[...txt.matchAll(/DTSTART:\d{8}T(\d\d)(\d\d)/g)].map(m=>m[1]+':'+m[2]);
+  document.getElementById('l').innerHTML=ev.map((s,i)=>'<li>'+s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))+' <span class="n">'+(ds[i]||'')+'</span></li>').join('');
+  const blob=new Blob([txt],{type:'text/calendar;charset=utf-8'}),u=URL.createObjectURL(blob);
+  const a1=document.getElementById('a1'),a2=document.getElementById('a2');a1.href=u;a2.href=u;a2.download=name;
+ }}
+</script></body></html>
