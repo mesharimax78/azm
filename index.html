@@ -344,6 +344,14 @@ select.field{appearance:none;-webkit-appearance:none}
 .stage .cico,.demo .cico{font-size:84px;min-height:180px}
 .pick-card .art .cico{font-size:40px}
 .bw-row{display:flex;padding:0 12px 6px}.bw-tog{font-size:13px}.bw-tog.on{border-color:#9b6bd6;color:#9b6bd6;background:rgba(155,107,214,.12)}.tm-btn{font-variant-numeric:tabular-nums}
+.wkstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:8px 6px;width:100%}
+.wkstrip .wd{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;border-radius:10px;font-size:12px;color:var(--muted)}
+.wkstrip .wd b{font-weight:600}.wkstrip .wd i{font-style:normal;font-size:13px;line-height:1}
+.wkstrip .wd.on{color:var(--plate)}.wkstrip .wd.done{color:var(--ok)}.wkstrip .wd.cur{background:var(--surface2);color:var(--fg)}
+.meal-chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px solid var(--line)}
+.meal-chips span{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.meal-chips span.cur{background:var(--plate-soft);color:var(--plate)}.meal-chips b{font-weight:600}
+.meal-row{gap:8px;padding:8px 10px}.meal-row .field{min-width:0}.meal-next .t{font-size:16px}
 </style>
 
 <div id="app" dir="rtl">
@@ -901,12 +909,11 @@ function vHome(){
   <section class="week"><div><span class="eyebrow">${t('wkCount')}</span><span class="num">${wk.length}</span></div>
     <div><span class="eyebrow">${t('wkVol')}</span><span class="num">${fmtVol(wk.reduce((a,w)=>a+wVol(w),0))}<small class="muted small"> ${t('kg')}</small></span></div>
     <div><span class="eyebrow">${t('wkTime')}</span><span class="num">${dur(wk.reduce((a,w)=>a+w.end-w.start,0))}</span></div></section>
+  ${planStrip(ws)}
   ${homeExtras(ws)}
   ${wk.length?(()=>{const sv=mmP;mmP='w0';const c=mmCounts();mmP=sv;const z=Object.keys(SUB).filter(k=>k!=='cardio'&&!c[k]).map(subName);return `<div class="list"><button class="item" data-act="tab" data-v="stats" style="text-align:start"><div class="grow"><div class="t">${t('mmT')}</div><div class="meta"><span>${esc(z.length?t('mmSkip',z.join('، ')):t('mmAll'))}</span></div></div><span class="link">←</span></button></div>`})():''}
-  <section class="next"><svg class="bar-deco" viewBox="0 0 150 46" aria-hidden="true"><rect x="0" y="20" width="150" height="6" rx="2" fill="currentColor"/><rect x="18" y="2" width="12" height="42" rx="3" fill="currentColor"/><rect x="34" y="8" width="9" height="30" rx="3" fill="currentColor"/><rect x="120" y="2" width="12" height="42" rx="3" fill="currentColor"/><rect x="107" y="8" width="9" height="30" rx="3" fill="currentColor"/></svg>
-    <div><div class="eyebrow">${esc(t('nextUp',L(p.name)))}</div><h2>${esc(t('dayName',L(n.name)))}</h2></div>
-    <ol>${n.ex.map(([id,s,r])=>`<li><button class="ex-name-btn" data-act="ex-info" data-id="${id}">${VID[id]?'▶ ':''}${esc(exName(id))}</button><span class="num">${s}×${r}</span></li>`).join('')}</ol>
-    <div class="row"><button class="btn primary" data-act="start" data-id="${n.id}">${t('startWorkout')}</button><button class="btn light" data-act="start-empty">${t('emptyWorkout')}</button></div></section>
+  ${heroCard(ws,p,n)}
+  ${mealsCard()}
   ${mine.length?`<section><div class="sec-head"><h3>${t('myRoutines')}</h3><button class="link" data-act="tab" data-v="prog">${t('all')}</button></div><div class="list">${mine.slice(0,4).map(r=>`<button class="item" data-act="start" data-id="${r.id}"><div class="grow"><div class="t">${esc(L(r.name))}</div><div class="meta"><span>${t('exN',r.ex.length)}</span></div></div><span class="link">${t('start')}</span></button>`).join('')}</div></section>`:''}
   <section><div class="sec-head"><h3>${t('recent')}</h3>${ws.length?`<button class="link" data-act="tab" data-v="hist">${t('fullHistory')}</button>`:''}</div>
   ${ws.length?`<div class="list">${ws.slice(0,3).map(w=>`<button class="item" data-act="hist-open" data-id="${w.id}">${wRow(w)}</button>`).join('')}</div>`:`<div class="empty"><strong>${t('noWT')}</strong>${esc(t('noWB',L(n.name)))}</div>`}</section>`;
@@ -919,6 +926,7 @@ function dayCard(d,own){
 function vProg(){
   const mine=S.profile.routines||[];
   return `<header class="top"><div><div class="eyebrow">${t('progSub')}</div><h1>${t('routines')}</h1></div>${topActs()}</header>
+  ${planSection()}
   <section class="prog"><div class="prog-head"><h2>${t('myRoutines')}</h2><button class="btn primary sm" data-act="new-r">${t('newRoutine')}</button></div>
   ${mine.length?`<div class="days">${mine.map(r=>dayCard(r,true)).join('')}</div>`:`<div class="empty"><strong>${t('mineT')}</strong>${t('mineB')}</div>`}</section>
   ${PROGRAMS.map(p=>`<section class="prog"><div class="prog-head"><div><h2>${esc(L(p.name))}</h2><div class="muted small">${esc(L(p.note))}</div></div>${S.profile.lastProgram===p.id?`<span class="tag">${t('currentProg')}</span>`:''}</div><div class="days">${p.days.map(d=>dayCard(d)).join('')}</div></section>`).join('')}`;
@@ -1607,8 +1615,149 @@ document.addEventListener('click',async ev=>{
     if(!jj||!jj.workouts){toast(t('badBackup'));break}
     const ws=Object.values(jj.workouts).filter(w=>w&&w.id&&!S.workouts[w.id]);for(const w of ws)await saveWorkout(w);
     if(jj.profile){const have=new Set((S.profile.routines||[]).map(r=>r.id));S.profile.routines=(S.profile.routines||[]).concat((jj.profile.routines||[]).filter(r=>!have.has(r.id)));
+      if(jj.profile.plan&&!planOn())S.profile.plan=jj.profile.plan;if(jj.profile.meals&&!(S.profile.meals||[]).length)S.profile.meals=jj.profile.meals;if(jj.profile.planTime&&!S.profile.planTime)S.profile.planTime=jj.profile.planTime;
       const hx=new Set((S.profile.customEx||[]).map(r=>r.id));S.profile.customEx=(S.profile.customEx||[]).concat((jj.profile.customEx||[]).filter(r=>!hx.has(r.id)));saveProfile()}
     toast(t('imported',ws.length));closeSheet();render(true);break}
+  }
+});
+
+/* ---------- weekly plan + meal times ---------- */
+Object.assign(T.ar,{planT:'جدولي الأسبوعي',planSub:'اختر وش تتمرن كل يوم، والباقي راحة',rest:'راحة',todayTag:'اليوم',planPickT:d=>d+' — وش تمرينه؟',myR:'جداولي',
+ todayW:'تمرين اليوم',restDay:'يوم راحة',restB:'ارتاح اليوم، عضلاتك تكبر وقت الراحة.',nextPlanned:(d,n)=>'التمرين الجاي: '+d+' · '+n,doneToday:'خلصت تمرين اليوم ✓',doneTodayB:'عافية عليك! ارجع بكرة.',startAnyway:'تمرن على أي حال',
+ planTime:'وقت التمرين',toCal:'أضفه للتقويم مع تنبيه',calDone:'افتح الملف واضغط "إضافة الكل" عشان يضيفه للتقويم',calErr:'ما قدرت أحفظ الملف',planEmptyCal:'حدد يوم تمرين واحد على الأقل',
+ mealsT:'أوقات الوجبات',mealsEmpty:'حدد أوقات وجباتك ويذكرك التطبيق فيها',mealsSet:'تحديد الأوقات',mealNext:'الوجبة الجاية',inT:m=>m<60?'بعد '+m+' د':'بعد '+Math.floor(m/60)+' س'+(m%60?' و '+m%60+' د':''),tomorrow:'بكرة',
+ mealAdd:'+ وجبة',mealName:'اسم الوجبة',mealDel:'حذف',meals3:'٣ وجبات',meals5:'٥ وجبات',mealAlert:'تنبيه وقت الوجبة لما يكون التطبيق مفتوح',mealNow:n=>'حان وقت '+n+' 🍽️',mealTap:'اضغط للإغلاق',
+ mealsCalNote:'التنبيه داخل التطبيق يشتغل بس لما يكون مفتوح. للتنبيه حتى والتطبيق مقفل، أضف الأوقات للتقويم.',edit2:'تعديل',
+ mB:'الفطور',mS1:'سناك',mL:'الغداء',mS2:'سناك العصر',mD:'العشاء',calWorkout:n=>'تمرين: '+n,calMeal:n=>n});
+Object.assign(T.en,{planT:'My weekly plan',planSub:'Pick a workout for each day; the rest are rest days',rest:'Rest',todayTag:'Today',planPickT:d=>d+' — which workout?',myR:'My routines',
+ todayW:"Today's workout",restDay:'Rest day',restB:'Take it easy today. Muscles grow while you rest.',nextPlanned:(d,n)=>'Next workout: '+d+' · '+n,doneToday:"Today's workout is done ✓",doneTodayB:'Nice work. See you tomorrow.',startAnyway:'Train anyway',
+ planTime:'Workout time',toCal:'Add to calendar with a reminder',calDone:'Open the file and tap "Add All" to put it in your calendar',calErr:'Could not save the file',planEmptyCal:'Pick at least one workout day',
+ mealsT:'Meal times',mealsEmpty:'Set your meal times and the app will remind you',mealsSet:'Set times',mealNext:'Next meal',inT:m=>m<60?'in '+m+' min':'in '+Math.floor(m/60)+' h'+(m%60?' '+m%60+' min':''),tomorrow:'tomorrow',
+ mealAdd:'+ Meal',mealName:'Meal name',mealDel:'Delete',meals3:'3 meals',meals5:'5 meals',mealAlert:'Alert at meal time while the app is open',mealNow:n=>'Time for '+n+' 🍽️',mealTap:'Tap to close',
+ mealsCalNote:'The in-app alert only works while the app is open. To get reminders when it is closed, add the times to your calendar.',edit2:'Edit',
+ mB:'Breakfast',mS1:'Snack',mL:'Lunch',mS2:'Afternoon snack',mD:'Dinner',calWorkout:n=>'Workout: '+n,calMeal:n=>n});
+
+const dayLbl=(d,f)=>new Intl.DateTimeFormat(lang()==='ar'?'ar-SA-u-ca-gregory-nu-latn':'en-GB',{weekday:f||'long'}).format(new Date(2026,0,4+d));
+const plan=()=>S.profile.plan||{};
+const planR=d=>{const id=plan()[d];return id?allRoutines().find(r=>r.id===id)||null:null};
+const planOn=()=>[0,1,2,3,4,5,6].some(d=>planR(d));
+const day0=(ts)=>{const x=new Date(ts);x.setHours(0,0,0,0);return x.getTime()};
+function nextPlanned(){const td=new Date().getDay();for(let k=1;k<=7;k++){const d=(td+k)%7,r=planR(d);if(r)return {d,r}}return null}
+const exList=r=>`<ol>${r.ex.map(([id,s,rep])=>`<li><button class="ex-name-btn" data-act="ex-info" data-id="${id}">${VID[id]?'▶ ':''}${esc(exName(id))}</button><span class="num">${s}×${rep}</span></li>`).join('')}</ol>`;
+const DECO=`<svg class="bar-deco" viewBox="0 0 150 46" aria-hidden="true"><rect x="0" y="20" width="150" height="6" rx="2" fill="currentColor"/><rect x="18" y="2" width="12" height="42" rx="3" fill="currentColor"/><rect x="34" y="8" width="9" height="30" rx="3" fill="currentColor"/><rect x="120" y="2" width="12" height="42" rx="3" fill="currentColor"/><rect x="107" y="8" width="9" height="30" rx="3" fill="currentColor"/></svg>`;
+function heroCard(ws,p,n){
+  if(!planOn())return `<section class="next">${DECO}
+    <div><div class="eyebrow">${esc(t('nextUp',L(p.name)))}</div><h2>${esc(t('dayName',L(n.name)))}</h2></div>
+    ${exList(n)}
+    <div class="row"><button class="btn primary" data-act="start" data-id="${n.id}">${t('startWorkout')}</button><button class="btn light" data-act="start-empty">${t('emptyWorkout')}</button></div></section>`;
+  const td=new Date().getDay(),r=planR(td),done=ws.some(w=>w.end>=day0(Date.now())),np=nextPlanned();
+  const nx=np?`<p class="small" style="margin:0;opacity:.8">${esc(t('nextPlanned',dayLbl(np.d),L(np.r.name)))}</p>`:'';
+  if(r&&!done)return `<section class="next">${DECO}<div><div class="eyebrow">${esc(t('todayW'))} · ${esc(dayLbl(td))}</div><h2>${esc(L(r.name))}</h2></div>${exList(r)}
+    <div class="row"><button class="btn primary" data-act="start" data-id="${r.id}">${t('startWorkout')}</button><button class="btn light" data-act="start-empty">${t('emptyWorkout')}</button></div></section>`;
+  if(r&&done)return `<section class="next">${DECO}<div><div class="eyebrow">${esc(dayLbl(td))}</div><h2>${esc(t('doneToday'))}</h2></div><p class="small" style="margin:0;opacity:.8">${esc(t('doneTodayB'))}</p>${nx}</section>`;
+  return `<section class="next">${DECO}<div><div class="eyebrow">${esc(dayLbl(td))}</div><h2>${esc(t('restDay'))}</h2></div><p class="small" style="margin:0;opacity:.8">${esc(t('restB'))}</p>${nx}
+    <div class="row">${np?`<button class="btn light" data-act="start" data-id="${np.r.id}">${t('startAnyway')}</button>`:''}<button class="btn light" data-act="start-empty">${t('emptyWorkout')}</button></div></section>`;
+}
+function planStrip(ws){
+  if(!planOn())return '';
+  const td=new Date().getDay(),w0=weekStart(Date.now());
+  return `<button class="wkstrip" data-act="tab" data-v="prog" aria-label="${esc(t('planT'))}">${[0,1,2,3,4,5,6].map(d=>{const st=w0+d*864e5,en=st+864e5,did=ws.some(w=>w.end>=st&&w.end<en),r=planR(d);
+    return `<span class="wd ${d===td?'cur':''} ${did?'done':r?'on':''}"><b>${esc(dayLbl(d,'narrow'))}</b><i>${did?'✓':r?'●':'·'}</i></span>`}).join('')}</button>`;
+}
+function planSection(){
+  const td=new Date().getDay();
+  return `<section class="prog"><div class="prog-head"><div><h2>${t('planT')}</h2><div class="muted small">${t('planSub')}</div></div></div>
+  <div class="list">${[0,1,2,3,4,5,6].map(d=>{const r=planR(d);return `<button class="item" data-act="plan-day" data-v="${d}"><div class="grow"><div class="t">${esc(dayLbl(d))} ${d===td?`<span class="tag">${t('todayTag')}</span>`:''}</div><div class="meta"><span>${r?esc(L(r.name))+' · '+t('exN',r.ex.length):t('rest')}</span></div></div><span class="link">${t('edit2')}</span></button>`}).join('')}</div>
+  <div class="inrow" style="margin-top:10px;align-items:center"><label class="muted small" for="plan-time" style="flex:none">${t('planTime')}</label><input class="field" type="time" id="plan-time" value="${esc(S.profile.planTime||'18:00')}" style="direction:ltr;flex:none;width:138px"><button class="btn" data-act="plan-ics">${t('toCal')}</button></div></section>`;
+}
+function openPlanDay(d){
+  const cur=plan()[d]||'',mine=S.profile.routines||[];
+  const row=(id,name,sub)=>`<button class="item" data-act="plan-set" data-d="${d}" data-v="${id}"><div class="grow"><div class="t">${esc(name)}</div>${sub?`<div class="meta"><span>${esc(sub)}</span></div>`:''}</div>${cur===id?`<span class="link">✓</span>`:''}</button>`;
+  openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${esc(t('planPickT',dayLbl(d)))}</h2></div></div>
+  <div class="list">${row('',t('rest'),'')}</div>
+  ${mine.length?`<section><h3 style="margin-bottom:8px">${t('myR')}</h3><div class="list">${mine.map(r=>row(r.id,L(r.name),t('exN',r.ex.length))).join('')}</div></section>`:''}
+  ${PROGRAMS.map(p=>`<section><h3 style="margin-bottom:8px">${esc(L(p.name))}</h3><div class="list">${p.days.map(r=>row(r.id,L(r.name),t('exN',r.ex.length))).join('')}</div></section>`).join('')}`);
+}
+
+/* meals */
+const meals=()=>(S.profile.meals||[]).slice().sort((a,b)=>a.time<b.time?-1:1);
+const tmin=s=>{const [h,m]=String(s||'0:0').split(':').map(Number);return h*60+(m||0)};
+function t12(s){const m=tmin(s),h=Math.floor(m/60),mm=String(m%60).padStart(2,'0');if(lang()==='en'){return ((h%12)||12)+':'+mm+(h<12?' am':' pm')}return ((h%12)||12)+':'+mm+(h<12?' ص':' م')}
+function nextMeal(){const ms=meals().filter(x=>x.time);if(!ms.length)return null;const n=new Date(),now=n.getHours()*60+n.getMinutes();
+  const m=ms.find(x=>tmin(x.time)>now);if(m)return {m,in:tmin(m.time)-now};return {m:ms[0],in:tmin(ms[0].time)+1440-now,tmr:true}}
+function mealsCard(){
+  const ms=meals();
+  if(!ms.length)return `<div class="list"><button class="item" data-act="meals-open" style="text-align:start"><div class="grow"><div class="t">${t('mealsT')}</div><div class="meta"><span>${t('mealsEmpty')}</span></div></div><span class="link">${t('mealsSet')}</span></button></div>`;
+  const nm=nextMeal();
+  return `<section class="meals"><div class="sec-head"><h3>${t('mealsT')}</h3><button class="link" data-act="meals-open">${t('edit2')}</button></div>
+  <div class="list">${nm?`<div class="item meal-next"><div class="grow"><div class="eyebrow">${t('mealNext')}</div><div class="t">${esc(nm.m.name)}</div></div><div style="text-align:end"><div class="num" style="font-weight:600">${t12(nm.m.time)}</div><div class="muted small">${nm.tmr?t('tomorrow'):t('inT',nm.in)}</div></div></div>`:''}
+  <div class="meal-chips">${ms.map(x=>`<span class="${nm&&x.id===nm.m.id?'cur':''}">${esc(x.name)} <b class="num">${t12(x.time)}</b></span>`).join('')}</div></div></section>`;
+}
+function mealsBody(){
+  const ms=S.profile.meals||[];
+  return `${ms.length?'':`<div class="chips"><button data-act="meals-tpl" data-v="3">${t('meals3')}</button><button data-act="meals-tpl" data-v="5">${t('meals5')}</button></div>`}
+  <div class="list">${ms.map((x,i)=>`<div class="item meal-row"><input class="field" data-meal-n="${i}" value="${esc(x.name)}" placeholder="${esc(t('mealName'))}" autocomplete="off"><input class="field" type="time" data-meal-t="${i}" value="${esc(x.time)}" style="direction:ltr;flex:none;width:138px"><button class="icon-btn" data-act="meal-del" data-i="${i}" aria-label="${esc(t('mealDel'))}">${I.trash}</button></div>`).join('')||''}</div>
+  <button class="btn" data-act="meal-add">${t('mealAdd')}</button>
+  <div class="list"><label class="toggle"><span>${t('mealAlert')}</span><input type="checkbox" id="meal-alert" ${S.profile.mealAlert!==false?'checked':''}></label></div>
+  <p class="muted small" style="margin:0">${t('mealsCalNote')}</p>
+  <button class="btn primary" data-act="meals-ics">${t('toCal')}</button>`;
+}
+function openMeals(){openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('mealsT')}</h2></div></div><div class="tools" id="meals-body">${mealsBody()}</div>`)}
+const mealsRe=()=>{const b=$('#meals-body');if(b)b.innerHTML=mealsBody();if(tab==='home')render(true)};
+SH.addEventListener('input',e=>{const el=e.target,ms=S.profile.meals;if(!ms)return;
+  if(el.dataset.mealN!=null){const x=ms[+el.dataset.mealN];if(x){x.name=el.value;saveProfile()}}
+  if(el.dataset.mealT!=null){const x=ms[+el.dataset.mealT];if(x&&el.value){x.time=el.value;saveProfile()}}});
+SH.addEventListener('change',e=>{const el=e.target;if(el.id==='meal-alert'){S.profile.mealAlert=el.checked;saveProfile()}if(el.dataset.mealN!=null||el.dataset.mealT!=null){if(tab==='home')render(true)}});
+document.addEventListener('change',e=>{if(e.target.id==='plan-time'&&e.target.value){S.profile.planTime=e.target.value;saveProfile()}});
+
+/* in-app meal alert */
+const mealFired={};
+function mealTick(){
+  if(S.profile.mealAlert===false)return;const n=new Date(),hm=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'),dk=n.toDateString();
+  for(const x of meals()){if(x.time===hm&&mealFired[x.id]!==dk){mealFired[x.id]=dk;
+    try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+    if(S.profile.settings.sound&&typeof actx!=='undefined'&&actx){try{if(actx.state==='suspended')actx.resume();[0,.2,.4].forEach((d,k)=>{const o=actx.createOscillator(),g=actx.createGain(),tt=actx.currentTime+d;o.frequency.value=[660,880,990][k];g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(.25,tt+.015);g.gain.exponentialRampToValueAtTime(.0001,tt+.25);o.connect(g).connect(actx.destination);o.start(tt);o.stop(tt+.28)})}catch(e){}}
+    const f=$('#flash');if(f){f.innerHTML=`<div><b>${esc(t('mealNow',x.name))}</b><span>${t('mealTap')}</span></div>`;f.hidden=false;clearTimeout(mealTick.t);mealTick.t=setTimeout(()=>f.hidden=true,8000)}
+    if(tab==='home')render(true)}}
+}
+setInterval(mealTick,15000);
+setInterval(()=>{if(tab==='home'&&$('#sheetW').hidden&&SH.hidden&&(S.profile.meals||[]).length)render(true)},60000);
+
+/* calendar (.ics) */
+function ics(evs){
+  const p=n=>String(n).padStart(2,'0'),now=new Date(),st=`${now.getUTCFullYear()}${p(now.getUTCMonth()+1)}${p(now.getUTCDate())}T${p(now.getUTCHours())}${p(now.getUTCMinutes())}00Z`;
+  const fold=l=>{const enc=new TextEncoder();let out='',cur='',n=0;for(const ch of l){const b=enc.encode(ch).length;if(n+b>73){out+=cur+'\r\n ';cur='';n=1}cur+=ch;n+=b}return out+cur};
+  const escI=v=>String(v).replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  const L_=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Azm//Azm//AR','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  for(const e of evs){const d=e.start;L_.push('BEGIN:VEVENT','UID:'+e.uid+'@azm','DTSTAMP:'+st,`DTSTART:${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`,'DURATION:'+e.dur,'RRULE:'+e.rule,'SUMMARY:'+escI(e.title),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+escI(e.title),'TRIGGER:-PT'+(e.before||0)+'M','END:VALARM','END:VEVENT')}
+  L_.push('END:VCALENDAR');return L_.map(fold).join('\r\n')+'\r\n';
+}
+async function saveFile(name,text,type){
+  const blob=new Blob([text],{type});
+  try{if(window.claude&&claude.use){const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data:blob});return true}}}catch(e){if(e&&e.code&&e.code!=='unavailable')return false}
+  const url=URL.createObjectURL(blob);
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)){const w=window.open(url,'_blank');if(w)return true}
+  try{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},4000);return true}catch(e){return false}
+}
+function firstAt(hm,dow){const d=new Date(),[h,m]=hm.split(':').map(Number);d.setHours(h,m||0,0,0);if(dow!=null){while(d.getDay()!==dow)d.setDate(d.getDate()+1)}return d}
+const BYDAY=['SU','MO','TU','WE','TH','FR','SA'];
+
+document.addEventListener('click',async ev=>{
+  const b=ev.target.closest('[data-act]');if(!b)return;
+  switch(b.dataset.act){
+  case 'plan-day':openPlanDay(+b.dataset.v);break;
+  case 'plan-set':{const pl=Object.assign({},plan());if(b.dataset.v)pl[b.dataset.d]=b.dataset.v;else delete pl[b.dataset.d];S.profile.plan=pl;saveProfile();closeSheet();render(true);break}
+  case 'plan-ics':{const tm=S.profile.planTime||'18:00',ev_=[];for(let d=0;d<7;d++){const r=planR(d);if(r)ev_.push({uid:'plan-'+d,start:firstAt(tm,d),dur:'PT1H',rule:'FREQ=WEEKLY;BYDAY='+BYDAY[d],title:t('calWorkout',L(r.name)),before:15})}
+    if(!ev_.length){toast(t('planEmptyCal'));break}toast((await saveFile('azm-workouts.ics',ics(ev_),'text/calendar'))?t('calDone'):t('calErr'));break}
+  case 'meals-open':openMeals();break;
+  case 'meals-tpl':{const T5=b.dataset.v==='5'?[['mB','07:30'],['mS1','10:30'],['mL','13:30'],['mS2','17:00'],['mD','20:30']]:[['mB','08:00'],['mL','14:00'],['mD','20:00']];
+    S.profile.meals=T5.map(([k,tm])=>({id:gid('m'),name:t(k),time:tm}));saveProfile();mealsRe();break}
+  case 'meal-add':{const ms=S.profile.meals=(S.profile.meals||[]).slice();const last=ms.length?tmin(ms[ms.length-1].time):11*60;const nt=Math.min(last+180,23*60);ms.push({id:gid('m'),name:'',time:String(Math.floor(nt/60)).padStart(2,'0')+':'+String(nt%60).padStart(2,'0')});saveProfile();mealsRe();
+    const f=document.querySelector(`[data-meal-n="${ms.length-1}"]`);if(f)f.focus();break}
+  case 'meal-del':{const ms=(S.profile.meals||[]).slice();ms.splice(+b.dataset.i,1);S.profile.meals=ms;saveProfile();mealsRe();break}
+  case 'meals-ics':{const ms=meals().filter(x=>x.time);if(!ms.length){toast(t('mealsEmpty'));break}
+    const ev_=ms.map(x=>({uid:'meal-'+x.id,start:firstAt(x.time),dur:'PT30M',rule:'FREQ=DAILY',title:t('calMeal',x.name||t('mealName')),before:0}));
+    toast((await saveFile('azm-meals.ics',ics(ev_),'text/calendar'))?t('calDone'):t('calErr'));break}
   }
 });
 
