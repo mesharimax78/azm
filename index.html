@@ -351,6 +351,7 @@ select.field{appearance:none;-webkit-appearance:none}
 .meal-chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px solid var(--line)}
 .meal-chips span{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--muted)}
 .meal-chips span.cur{background:var(--plate-soft);color:var(--plate)}.meal-chips b{font-weight:600}
+.nu-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:12px 6px}.nu-grid div{display:flex;flex-direction:column;align-items:center;gap:0}.nu-grid b{font-size:19px;font-weight:600}.nu-grid span{font-size:12px;color:var(--muted)}.nu-grid div:first-child b{color:var(--plate)}
 .meal-row{gap:8px;padding:8px 10px}.meal-row .field{min-width:0}.meal-next .t{font-size:16px}
 </style>
 
@@ -914,6 +915,7 @@ function vHome(){
   ${wk.length?(()=>{const sv=mmP;mmP='w0';const c=mmCounts();mmP=sv;const z=Object.keys(SUB).filter(k=>k!=='cardio'&&!c[k]).map(subName);return `<div class="list"><button class="item" data-act="tab" data-v="stats" style="text-align:start"><div class="grow"><div class="t">${t('mmT')}</div><div class="meta"><span>${esc(z.length?t('mmSkip',z.join('، ')):t('mmAll'))}</span></div></div><span class="link">←</span></button></div>`})():''}
   ${heroCard(ws,p,n)}
   ${mealsCard()}
+  ${nutriCard()}
   ${mine.length?`<section><div class="sec-head"><h3>${t('myRoutines')}</h3><button class="link" data-act="tab" data-v="prog">${t('all')}</button></div><div class="list">${mine.slice(0,4).map(r=>`<button class="item" data-act="start" data-id="${r.id}"><div class="grow"><div class="t">${esc(L(r.name))}</div><div class="meta"><span>${t('exN',r.ex.length)}</span></div></div><span class="link">${t('start')}</span></button>`).join('')}</div></section>`:''}
   <section><div class="sec-head"><h3>${t('recent')}</h3>${ws.length?`<button class="link" data-act="tab" data-v="hist">${t('fullHistory')}</button>`:''}</div>
   ${ws.length?`<div class="list">${ws.slice(0,3).map(w=>`<button class="item" data-act="hist-open" data-id="${w.id}">${wRow(w)}</button>`).join('')}</div>`:`<div class="empty"><strong>${t('noWT')}</strong>${esc(t('noWB',L(n.name)))}</div>`}</section>`;
@@ -1615,7 +1617,7 @@ document.addEventListener('click',async ev=>{
     if(!jj||!jj.workouts){toast(t('badBackup'));break}
     const ws=Object.values(jj.workouts).filter(w=>w&&w.id&&!S.workouts[w.id]);for(const w of ws)await saveWorkout(w);
     if(jj.profile){const have=new Set((S.profile.routines||[]).map(r=>r.id));S.profile.routines=(S.profile.routines||[]).concat((jj.profile.routines||[]).filter(r=>!have.has(r.id)));
-      if(jj.profile.plan&&!planOn())S.profile.plan=jj.profile.plan;if(jj.profile.meals&&!(S.profile.meals||[]).length)S.profile.meals=jj.profile.meals;if(jj.profile.planTime&&!S.profile.planTime)S.profile.planTime=jj.profile.planTime;
+      if(jj.profile.plan&&!planOn())S.profile.plan=jj.profile.plan;if(jj.profile.meals&&!(S.profile.meals||[]).length)S.profile.meals=jj.profile.meals;if(jj.profile.nutri&&!S.profile.nutri)S.profile.nutri=jj.profile.nutri;if(jj.profile.planTime&&!S.profile.planTime)S.profile.planTime=jj.profile.planTime;
       const hx=new Set((S.profile.customEx||[]).map(r=>r.id));S.profile.customEx=(S.profile.customEx||[]).concat((jj.profile.customEx||[]).filter(r=>!hx.has(r.id)));saveProfile()}
     toast(t('imported',ws.length));closeSheet();render(true);break}
   }
@@ -1624,14 +1626,14 @@ document.addEventListener('click',async ev=>{
 /* ---------- weekly plan + meal times ---------- */
 Object.assign(T.ar,{planT:'جدولي الأسبوعي',planSub:'اختر وش تتمرن كل يوم، والباقي راحة',rest:'راحة',todayTag:'اليوم',planPickT:d=>d+' — وش تمرينه؟',myR:'جداولي',
  todayW:'تمرين اليوم',restDay:'يوم راحة',restB:'ارتاح اليوم، عضلاتك تكبر وقت الراحة.',nextPlanned:(d,n)=>'التمرين الجاي: '+d+' · '+n,doneToday:'خلصت تمرين اليوم ✓',doneTodayB:'عافية عليك! ارجع بكرة.',startAnyway:'تمرن على أي حال',
- planTime:'وقت التمرين',toCal:'أضفه للتقويم مع تنبيه',calDone:'افتح الملف واضغط "إضافة الكل" عشان يضيفه للتقويم',calErr:'ما قدرت أحفظ الملف',planEmptyCal:'حدد يوم تمرين واحد على الأقل',
+ planTime:'وقت التمرين',toCal:'أضفه للتقويم مع تنبيه',calDone:'افتح الملف واضغط "إضافة الكل" عشان يضيفه للتقويم',calErr:'ما قدرت أحفظ الملف',calShare:'اختر "حفظ في الملفات"، بعدها افتح الملف من تطبيق الملفات واضغط "إضافة الكل"',planEmptyCal:'حدد يوم تمرين واحد على الأقل',
  mealsT:'أوقات الوجبات',mealsEmpty:'حدد أوقات وجباتك ويذكرك التطبيق فيها',mealsSet:'تحديد الأوقات',mealNext:'الوجبة الجاية',inT:m=>m<60?'بعد '+m+' د':'بعد '+Math.floor(m/60)+' س'+(m%60?' و '+m%60+' د':''),tomorrow:'بكرة',
  mealAdd:'+ وجبة',mealName:'اسم الوجبة',mealDel:'حذف',meals3:'٣ وجبات',meals5:'٥ وجبات',mealAlert:'تنبيه وقت الوجبة لما يكون التطبيق مفتوح',mealNow:n=>'حان وقت '+n+' 🍽️',mealTap:'اضغط للإغلاق',
  mealsCalNote:'التنبيه داخل التطبيق يشتغل بس لما يكون مفتوح. للتنبيه حتى والتطبيق مقفل، أضف الأوقات للتقويم.',edit2:'تعديل',
  mB:'الفطور',mS1:'سناك',mL:'الغداء',mS2:'سناك العصر',mD:'العشاء',calWorkout:n=>'تمرين: '+n,calMeal:n=>n});
 Object.assign(T.en,{planT:'My weekly plan',planSub:'Pick a workout for each day; the rest are rest days',rest:'Rest',todayTag:'Today',planPickT:d=>d+' — which workout?',myR:'My routines',
  todayW:"Today's workout",restDay:'Rest day',restB:'Take it easy today. Muscles grow while you rest.',nextPlanned:(d,n)=>'Next workout: '+d+' · '+n,doneToday:"Today's workout is done ✓",doneTodayB:'Nice work. See you tomorrow.',startAnyway:'Train anyway',
- planTime:'Workout time',toCal:'Add to calendar with a reminder',calDone:'Open the file and tap "Add All" to put it in your calendar',calErr:'Could not save the file',planEmptyCal:'Pick at least one workout day',
+ planTime:'Workout time',toCal:'Add to calendar with a reminder',calDone:'Open the file and tap "Add All" to put it in your calendar',calErr:'Could not save the file',calShare:'Pick "Save to Files", then open the file in the Files app and tap "Add All"',planEmptyCal:'Pick at least one workout day',
  mealsT:'Meal times',mealsEmpty:'Set your meal times and the app will remind you',mealsSet:'Set times',mealNext:'Next meal',inT:m=>m<60?'in '+m+' min':'in '+Math.floor(m/60)+' h'+(m%60?' '+m%60+' min':''),tomorrow:'tomorrow',
  mealAdd:'+ Meal',mealName:'Meal name',mealDel:'Delete',meals3:'3 meals',meals5:'5 meals',mealAlert:'Alert at meal time while the app is open',mealNow:n=>'Time for '+n+' 🍽️',mealTap:'Tap to close',
  mealsCalNote:'The in-app alert only works while the app is open. To get reminders when it is closed, add the times to your calendar.',edit2:'Edit',
@@ -1736,7 +1738,7 @@ async function saveFile(name,text,type){
   const blob=new Blob([text],{type});
   try{if(window.claude&&claude.use){const dl=await claude.use('downloads');if(dl){await dl.save({filename:name,data:blob});return true}}}catch(e){if(e&&e.code&&e.code!=='unavailable')return false}
   const url=URL.createObjectURL(blob);
-  if(/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)){const w=window.open('cal.html#'+encodeURIComponent(JSON.stringify({t:text,n:name})),'_blank');if(w)return true;try{const f=new File([blob],name,{type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return true}}catch(e){if(e&&e.name==='AbortError')return true}}
+  if(/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)){try{const f=new File([blob],name,{type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return 'share'}}catch(e){if(e&&e.name==='AbortError')return 'share'}const w=window.open('cal.html#'+encodeURIComponent(JSON.stringify({t:text,n:name})),'_blank');if(w)return true;}
   try{const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},4000);return true}catch(e){return false}
 }
 function firstAt(hm,dow){const d=new Date(),[h,m]=hm.split(':').map(Number);d.setHours(h,m||0,0,0);if(dow!=null){while(d.getDay()!==dow)d.setDate(d.getDate()+1)}return d}
@@ -1748,7 +1750,7 @@ document.addEventListener('click',async ev=>{
   case 'plan-day':openPlanDay(+b.dataset.v);break;
   case 'plan-set':{const pl=Object.assign({},plan());if(b.dataset.v)pl[b.dataset.d]=b.dataset.v;else delete pl[b.dataset.d];S.profile.plan=pl;saveProfile();closeSheet();render(true);break}
   case 'plan-ics':{const tm=S.profile.planTime||'18:00',ev_=[];for(let d=0;d<7;d++){const r=planR(d);if(r)ev_.push({uid:'plan-'+d,start:firstAt(tm,d),dur:'PT1H',rule:'FREQ=WEEKLY;BYDAY='+BYDAY[d],title:t('calWorkout',L(r.name)),before:15})}
-    if(!ev_.length){toast(t('planEmptyCal'));break}toast((await saveFile('azm-workouts.ics',ics(ev_),'text/calendar'))?t('calDone'):t('calErr'));break}
+    if(!ev_.length){toast(t('planEmptyCal'));break}{const r_=await saveFile('azm-workouts.ics',ics(ev_),'text/calendar');toast(r_==='share'?t('calShare'):r_?t('calDone'):t('calErr'))};break}
   case 'meals-open':openMeals();break;
   case 'meals-tpl':{const T5=b.dataset.v==='5'?[['mB','07:30'],['mS1','10:30'],['mL','13:30'],['mS2','17:00'],['mD','20:30']]:[['mB','08:00'],['mL','14:00'],['mD','20:00']];
     S.profile.meals=T5.map(([k,tm])=>({id:gid('m'),name:t(k),time:tm}));saveProfile();mealsRe();break}
@@ -1757,9 +1759,49 @@ document.addEventListener('click',async ev=>{
   case 'meal-del':{const ms=(S.profile.meals||[]).slice();ms.splice(+b.dataset.i,1);S.profile.meals=ms;saveProfile();mealsRe();break}
   case 'meals-ics':{const ms=meals().filter(x=>x.time);if(!ms.length){toast(t('mealsEmpty'));break}
     const ev_=ms.map(x=>({uid:'meal-'+x.id,start:firstAt(x.time),dur:'PT30M',rule:'FREQ=DAILY',title:t('calMeal',x.name||t('mealName')),before:0}));
-    toast((await saveFile('azm-meals.ics',ics(ev_),'text/calendar'))?t('calDone'):t('calErr'));break}
+    {const r_=await saveFile('azm-meals.ics',ics(ev_),'text/calendar');toast(r_==='share'?t('calShare'):r_?t('calDone'):t('calErr'))};break}
   }
 });
+
+/* ---------- daily calories & macros ---------- */
+Object.assign(T.ar,{nuT:'احتياجك اليومي',nuEmpty:'اعرف كم تحتاج بروتين وكارب ودهون حسب وزنك وهدفك',nuSet:'احسبها',nuKcal:'سعرة',nuP:'بروتين',nuC:'كارب',nuF:'دهون',g:'ج',
+ nuPerMeal:n=>'لكل وجبة ('+n+' وجبات)',nuSex:'الجنس',nuM:'ذكر',nuW:'أنثى',nuAge:'العمر',nuH:'الطول (سم)',nuWt:'الوزن (كجم)',nuAct:'نشاطك',
+ nuA1:'خفيف (١-٢ تمرين)',nuA2:'متوسط (٣-٥ تمارين)',nuA3:'عالي (٦+ أو شغل متعب)',nuGoal:'هدفك',nuCut:'تنشيف',nuKeep:'ثبات',nuBulk:'تضخيم',
+ nuNote:'أرقام تقديرية عامة، مو بديل عن أخصائي تغذية. راقب وزنك أسبوعين وعدّل.',nuFill:'عبّ العمر والطول والوزن',nuWater:'ماء',nuL:'لتر'});
+Object.assign(T.en,{nuT:'Your daily needs',nuEmpty:'See how much protein, carbs and fat you need for your weight and goal',nuSet:'Calculate',nuKcal:'kcal',nuP:'Protein',nuC:'Carbs',nuF:'Fat',g:'g',
+ nuPerMeal:n=>'Per meal ('+n+' meals)',nuSex:'Sex',nuM:'Male',nuW:'Female',nuAge:'Age',nuH:'Height (cm)',nuWt:'Weight (kg)',nuAct:'Activity',
+ nuA1:'Light (1-2 workouts)',nuA2:'Moderate (3-5 workouts)',nuA3:'High (6+ or physical job)',nuGoal:'Goal',nuCut:'Cut',nuKeep:'Maintain',nuBulk:'Bulk',
+ nuNote:'General estimates, not a substitute for a dietitian. Watch your weight for two weeks and adjust.',nuFill:'Fill in age, height and weight',nuWater:'Water',nuL:'L'});
+const nu=()=>Object.assign({sex:'m',age:'',h:'',w:'',act:2,goal:'keep'},S.profile.nutri||{});
+function macros(o){
+  const w=+o.w||curBW(),h=+o.h,a=+o.age;if(!(w>0&&h>0&&a>0))return null;
+  const bmr=10*w+6.25*h-5*a+(o.sex==='f'?-161:5),tdee=bmr*[1.375,1.55,1.725][(+o.act||2)-1];
+  const kcal=Math.round(tdee*(o.goal==='cut'?0.8:o.goal==='bulk'?1.1:1)/10)*10;
+  const P=Math.round(w*(o.goal==='cut'?2.2:1.8)/5)*5,F=Math.round(kcal*0.25/9/5)*5,C=Math.max(0,Math.round((kcal-P*4-F*9)/4/5)*5);
+  return {kcal,P,C,F,water:Math.round(w*0.035*10)/10};
+}
+function nuGrid(m){const nm=(S.profile.meals||[]).length;
+  return `<div class="nu-grid"><div><b class="num">${m.kcal}</b><span>${t('nuKcal')}</span></div><div><b class="num">${m.P}${t('g')}</b><span>${t('nuP')}</span></div><div><b class="num">${m.C}${t('g')}</b><span>${t('nuC')}</span></div><div><b class="num">${m.F}${t('g')}</b><span>${t('nuF')}</span></div></div>
+  ${nm>1?`<p class="muted small" style="margin:0;padding:0 14px 12px">${t('nuPerMeal',nm)}: ${t('nuP')} ${Math.round(m.P/nm)}${t('g')} · ${t('nuC')} ${Math.round(m.C/nm)}${t('g')} · ${t('nuF')} ${Math.round(m.F/nm)}${t('g')} · ${t('nuWater')} ${m.water} ${t('nuL')}/${lang()==='ar'?'اليوم':'day'}</p>`:`<p class="muted small" style="margin:0;padding:0 14px 12px">${t('nuWater')} ${m.water} ${t('nuL')}/${lang()==='ar'?'اليوم':'day'}</p>`}`}
+function nutriCard(){
+  const m=S.profile.nutri?macros(nu()):null;
+  if(!m)return `<div class="list"><button class="item" data-act="nu-open" style="text-align:start"><div class="grow"><div class="t">${t('nuT')}</div><div class="meta"><span>${t('nuEmpty')}</span></div></div><span class="link">${t('nuSet')}</span></button></div>`;
+  const o=nu();return `<section><div class="sec-head"><h3>${t('nuT')} · <span class="muted small">${t(o.goal==='cut'?'nuCut':o.goal==='bulk'?'nuBulk':'nuKeep')}</span></h3><button class="link" data-act="nu-open">${t('edit2')}</button></div><div class="list">${nuGrid(m)}</div></section>`;
+}
+function nuBody(){const o=nu(),m=macros(o),ch=(k,v,l)=>`<button data-act="nu-set" data-k="${k}" data-v="${v}" aria-pressed="${String(o[k])===String(v)}">${l}</button>`;
+  return `<div class="eyebrow">${t('nuGoal')}</div><div class="chips">${ch('goal','cut',t('nuCut'))}${ch('goal','keep',t('nuKeep'))}${ch('goal','bulk',t('nuBulk'))}</div>
+  <div class="eyebrow">${t('nuSex')}</div><div class="chips">${ch('sex','m',t('nuM'))}${ch('sex','f',t('nuW'))}</div>
+  <div class="two"><div><label class="eyebrow" for="nu-age">${t('nuAge')}</label><input class="field" id="nu-age" inputmode="numeric" value="${esc(o.age)}" placeholder="28"></div><div><label class="eyebrow" for="nu-h">${t('nuH')}</label><input class="field" id="nu-h" inputmode="numeric" value="${esc(o.h)}" placeholder="175"></div></div>
+  <label class="eyebrow" for="nu-w">${t('nuWt')}</label><input class="field" id="nu-w" inputmode="decimal" value="${esc(o.w||curBW()||'')}" placeholder="80">
+  <div class="eyebrow">${t('nuAct')}</div><div class="chips" style="flex-wrap:wrap">${ch('act',1,t('nuA1'))}${ch('act',2,t('nuA2'))}${ch('act',3,t('nuA3'))}</div>
+  <div class="list" id="nu-out">${m?nuGrid(m):`<p class="muted small" style="margin:0;padding:14px">${t('nuFill')}</p>`}</div>
+  <p class="muted small" style="margin:0">${t('nuNote')}</p>`}
+function openNu(){if(!S.profile.nutri){S.profile.nutri=nu();}openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('nuT')}</h2></div></div><div class="tools" id="nu-body">${nuBody()}</div>`)}
+SH.addEventListener('input',e=>{const el=e.target,k={'nu-age':'age','nu-h':'h','nu-w':'w'}[el.id];if(!k)return;const v=normDigits(el.value);if(v!==el.value)el.value=v;
+  S.profile.nutri=Object.assign(nu(),{[k]:v});saveProfile();const m=macros(nu()),o=$('#nu-out');if(o)o.innerHTML=m?nuGrid(m):`<p class="muted small" style="margin:0;padding:14px">${t('nuFill')}</p>`;if(tab==='home')render(true)});
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act]');if(!b)return;
+  if(b.dataset.act==='nu-open')openNu();
+  if(b.dataset.act==='nu-set'){S.profile.nutri=Object.assign(nu(),{[b.dataset.k]:b.dataset.k==='act'?+b.dataset.v:b.dataset.v});saveProfile();$('#nu-body').innerHTML=nuBody();if(tab==='home')render(true)}});
 
 applyLang();render();
 initCloud().then(ok=>{if(!ok)setTimeout(initCloud,600)});
