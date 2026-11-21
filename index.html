@@ -356,6 +356,10 @@ select.field{appearance:none;-webkit-appearance:none}
 .sg{padding:10px 14px;border-top:1px solid var(--line);text-align:start;display:flex;flex-direction:column;gap:6px}.sg-h{display:flex;align-items:center;gap:8px}.sg-h b{flex:1}
 .sg-r{width:36px;height:36px;font-size:18px}.sg-i{display:flex;flex-wrap:wrap;gap:6px}.sg-i span{font-size:14px;padding:3px 10px;border-radius:999px;background:var(--surface2)}
 .sg-t{flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;background:var(--surface2)}.sg-t span{font-size:13px}
+.fd-bars{display:flex;flex-direction:column;gap:10px;padding:14px}.fd-bar{display:flex;flex-direction:column;gap:4px}.fd-l{display:flex;justify-content:space-between;font-size:14px}.fd-l b{font-weight:600}
+.fd-tr{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}.fd-tr i{display:block;height:100%;background:var(--plate);border-radius:99px}.fd-tr i.over{background:#c0392b}
+.fd-row{padding:10px 14px}.fd-pan{display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--plate);border-radius:var(--r);background:var(--surface)}
+.nu-in{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.nu-in label{display:flex;flex-direction:column;gap:4px}.fd-cu{display:block}
 .meal-row{gap:8px;padding:8px 10px}.meal-row .field{min-width:0}.meal-next .t{font-size:16px}
 </style>
 
@@ -920,6 +924,7 @@ function vHome(){
   ${heroCard(ws,p,n)}
   ${mealsCard()}
   ${nutriCard()}
+  ${foodCard()}
   ${mine.length?`<section><div class="sec-head"><h3>${t('myRoutines')}</h3><button class="link" data-act="tab" data-v="prog">${t('all')}</button></div><div class="list">${mine.slice(0,4).map(r=>`<button class="item" data-act="start" data-id="${r.id}"><div class="grow"><div class="t">${esc(L(r.name))}</div><div class="meta"><span>${t('exN',r.ex.length)}</span></div></div><span class="link">${t('start')}</span></button>`).join('')}</div></section>`:''}
   <section><div class="sec-head"><h3>${t('recent')}</h3>${ws.length?`<button class="link" data-act="tab" data-v="hist">${t('fullHistory')}</button>`:''}</div>
   ${ws.length?`<div class="list">${ws.slice(0,3).map(w=>`<button class="item" data-act="hist-open" data-id="${w.id}">${wRow(w)}</button>`).join('')}</div>`:`<div class="empty"><strong>${t('noWT')}</strong>${esc(t('noWB',L(n.name)))}</div>`}</section>`;
@@ -1621,7 +1626,7 @@ document.addEventListener('click',async ev=>{
     if(!jj||!jj.workouts){toast(t('badBackup'));break}
     const ws=Object.values(jj.workouts).filter(w=>w&&w.id&&!S.workouts[w.id]);for(const w of ws)await saveWorkout(w);
     if(jj.profile){const have=new Set((S.profile.routines||[]).map(r=>r.id));S.profile.routines=(S.profile.routines||[]).concat((jj.profile.routines||[]).filter(r=>!have.has(r.id)));
-      if(jj.profile.plan&&!planOn())S.profile.plan=jj.profile.plan;if(jj.profile.meals&&!(S.profile.meals||[]).length)S.profile.meals=jj.profile.meals;if(jj.profile.nutri&&!S.profile.nutri)S.profile.nutri=jj.profile.nutri;if(jj.profile.planTime&&!S.profile.planTime)S.profile.planTime=jj.profile.planTime;
+      if(jj.profile.plan&&!planOn())S.profile.plan=jj.profile.plan;if(jj.profile.meals&&!(S.profile.meals||[]).length)S.profile.meals=jj.profile.meals;if(jj.profile.customFood&&!(S.profile.customFood||[]).length)S.profile.customFood=jj.profile.customFood;if(jj.profile.nutri&&!S.profile.nutri)S.profile.nutri=jj.profile.nutri;if(jj.profile.planTime&&!S.profile.planTime)S.profile.planTime=jj.profile.planTime;
       const hx=new Set((S.profile.customEx||[]).map(r=>r.id));S.profile.customEx=(S.profile.customEx||[]).concat((jj.profile.customEx||[]).filter(r=>!hx.has(r.id)));saveProfile()}
     toast(t('imported',ws.length));closeSheet();render(true);break}
   }
@@ -1879,6 +1884,69 @@ function suggBlock(m){
 }
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act="sugg-swap"]');if(!b)return;
   const dk=new Date().toDateString(),R_=(S.profile.suggRR&&S.profile.suggRR.d===dk)?S.profile.suggRR:{d:dk,r:{}};R_.r[b.dataset.i]=(R_.r[b.dataset.i]||0)+1;S.profile.suggRR=R_;saveProfile();render(true)});
+
+/* ---------- food calculator + daily food log ---------- */
+Object.assign(FD,{
+ thigh:{ar:'فخذ دجاج مشوي',en:'Grilled chicken thigh',m:[209,26,0,10.9]},salmon:{ar:'سلمون',en:'Salmon',m:[208,20,0,13]},
+ mince:{ar:'لحم مفروم',en:'Ground beef',m:[254,25.7,0,16]},lamb:{ar:'لحم غنم',en:'Lamb',m:[294,25,0,21]},turkey:{ar:'شرائح تيركي',en:'Turkey slices',m:[104,17,3,2]},
+ milk:{ar:'حليب كامل الدسم',en:'Whole milk',m:[61,3.2,4.8,3.3]},milk0:{ar:'حليب خالي الدسم',en:'Skim milk',m:[34,3.4,5,0.1]},laban:{ar:'لبن',en:'Laban',m:[42,3.4,4.7,1]},
+ labneh:{ar:'لبنة',en:'Labneh',m:[180,8,5,14]},feta:{ar:'جبن فيتا',en:'Feta cheese',m:[264,14,4,21]},mozz:{ar:'جبن موزاريلا',en:'Mozzarella',m:[280,28,3,17]},cheddar:{ar:'جبن شيدر',en:'Cheddar',m:[403,25,1.3,33]},
+ hummus:{ar:'حمص بطحينة',en:'Hummus',m:[166,8,14,10]},falafel:{ar:'فلافل',en:'Falafel',m:[333,13,32,18]},foul:{ar:'فول مدمس',en:'Foul (fava beans)',m:[110,7.6,19.6,0.4]},
+ pita:{ar:'خبز عربي',en:'Pita bread',m:[275,9,56,1.2]},tamees:{ar:'خبز تميس',en:'Tamees bread',m:[270,9,55,1.5]},flakes:{ar:'كورن فليكس',en:'Corn flakes',m:[357,7.5,84,0.4]},
+ fries:{ar:'بطاطس مقلية',en:'French fries',m:[312,3.4,41,15]},honey:{ar:'عسل',en:'Honey',m:[304,0.3,82,0]},sugar:{ar:'سكر',en:'Sugar',m:[387,0,100,0]},
+ orange:{ar:'برتقال',en:'Orange',m:[47,0.9,12,0.1],u:150,un:['برتقالة','برتقالات'],ue:['orange','oranges']},grapes:{ar:'عنب',en:'Grapes',m:[69,0.7,18,0.2]},melon:{ar:'حبحب',en:'Watermelon',m:[30,0.6,7.6,0.2]},
+ ojuice:{ar:'عصير برتقال',en:'Orange juice',m:[45,0.7,10,0.2]},cola:{ar:'مشروب غازي',en:'Soft drink',m:[42,0,10.6,0],u:330,un:['علبة','علب'],ue:['can','cans']},
+ walnut:{ar:'عين جمل',en:'Walnuts',m:[654,15,14,65]},cashew:{ar:'كاجو',en:'Cashews',m:[553,18,30,44]},choc:{ar:'شوكولاتة داكنة',en:'Dark chocolate',m:[546,5,61,31]},
+ pbar:{ar:'بار بروتين',en:'Protein bar',m:[333,33,37,12],u:60,un:['بار','بارات'],ue:['bar','bars']},butter:{ar:'زبدة',en:'Butter',m:[717,0.9,0.1,81]},tahini:{ar:'طحينة',en:'Tahini',m:[595,17,21,54]}});
+Object.assign(T.ar,{fdT:'أكلي اليوم',fdEmpty:'سجّل اللي أكلته ويحسب لك البروتين والكارب والدهون',fdAdd:'+ أضف أكل',fdCalc:'حاسبة الأكل',fdQ:'ابحث عن أكل (مثلاً شوفان)',fdAmt:'الكمية',fdGram:'جرام',fdLog:'أضف لأكلي اليوم',fdAdded:'انضاف',fdNone:'ما لقيت. أضفه بنفسك تحت',fdCustom:'أكل مو موجود؟ أضفه',fdCName:'اسم الأكل',fdPer:'لكل ١٠٠ جرام:',fdSave:'احفظ الأكل',fdLeft:'باقي لك',fdOver:'زايد',fdOf:x=>'من '+x,fdDel:'حذف'});
+Object.assign(T.en,{fdT:'Eaten today',fdEmpty:'Log what you eat and see your protein, carbs and fat',fdAdd:'+ Add food',fdCalc:'Food calculator',fdQ:'Search food (e.g. oats)',fdAmt:'Amount',fdGram:'grams',fdLog:'Add to today',fdAdded:'Added',fdNone:'Not found. Add it yourself below',fdCustom:'Food not listed? Add it',fdCName:'Food name',fdPer:'Per 100 g:',fdSave:'Save food',fdLeft:'left',fdOver:'over',fdOf:x=>'of '+x,fdDel:'Delete'});
+const fdGet=k=>FD[k]||(S.profile.customFood||[]).find(f=>f.id===k);
+const fdName=d=>lang()==='ar'?(d.ar||d.en):(d.en||d.ar);
+const todayK=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fdLog=()=>(S.profile.food||{})[todayK()]||[];
+const fdMac=(k,a)=>{const d=fdGet(k);return d?d.m.map(v=>v*a/100):[0,0,0,0]};
+const fdSum=it=>it.reduce((t_,x)=>{const m=fdMac(x.k,x.a);return t_.map((v,i)=>v+m[i])},[0,0,0,0]);
+function fdAmtTxt(x){const d=fdGet(x.k);if(d&&d.u&&x.n){return itemTxt({k:x.k,n:x.n,a:x.a})}return `${Math.round(x.a)}${t('g')} ${fdName(d||{ar:'?',en:'?'})}`}
+function foodCard(){
+  const it=fdLog(),tg=S.profile.nutri?macros(nu()):null;
+  if(!it.length)return `<div class="list"><button class="item" data-act="fd-open" style="text-align:start"><div class="grow"><div class="t">${t('fdCalc')}</div><div class="meta"><span>${t('fdEmpty')}</span></div></div><span class="link">${t('fdAdd')}</span></button></div>`;
+  const sm=fdSum(it).map(Math.round),rows=[['nuKcal',0,tg&&tg.kcal,''],['nuP',1,tg&&tg.P,t('g')],['nuC',2,tg&&tg.C,t('g')],['nuF',3,tg&&tg.F,t('g')]];
+  return `<section><div class="sec-head"><h3>${t('fdT')}</h3><button class="link" data-act="fd-open">${t('fdAdd')}</button></div><div class="list">
+  <div class="fd-bars">${rows.map(([k,i,tv,u])=>`<div class="fd-bar"><div class="fd-l"><span>${t(k)}</span><b class="num">${sm[i]}${u}${tv?` <span class="muted">${t('fdOf',tv+u)}</span>`:''}</b></div>${tv?`<div class="fd-tr"><i style="width:${Math.min(100,sm[i]/tv*100)}%" class="${sm[i]>tv*1.05?'over':''}"></i></div>`:''}</div>`).join('')}</div>
+  ${it.map((x,i)=>{const m=fdMac(x.k,x.a).map(Math.round);return `<div class="item fd-row"><div class="grow"><div class="t">${esc(fdAmtTxt(x))}</div><div class="meta"><span class="num">${m[0]} ${t('nuKcal')} · ${t('nuP')} ${m[1]} · ${t('nuC')} ${m[2]} · ${t('nuF')} ${m[3]}</span></div></div><button class="icon-btn" data-act="fd-del" data-i="${i}" aria-label="${t('fdDel')}">${I.trash}</button></div>`}).join('')}</div></section>`;
+}
+let fdSel=null;
+function fdList(q){q=(q||'').trim().toLowerCase();const all=Object.keys(FD).filter(k=>k!=='veg').map(k=>[k,FD[k]]).concat((S.profile.customFood||[]).map(f=>[f.id,f]));
+  const r=all.filter(([k,d])=>!q||(d.ar||'').includes(q)||(d.en||'').toLowerCase().includes(q)).slice(0,q?30:14);
+  return r.length?r.map(([k,d])=>`<button class="item" data-act="fd-pick" data-k="${k}"><div class="grow"><div class="t">${esc(fdName(d))}</div><div class="meta"><span class="num">${t('fdPer')} ${Math.round(d.m[0])} ${t('nuKcal')} · ${t('nuP')} ${d.m[1]} · ${t('nuC')} ${d.m[2]} · ${t('nuF')} ${d.m[3]}</span></div></div></button>`).join(''):`<p class="muted small" style="margin:0;padding:14px">${t('fdNone')}</p>`}
+function fdPanel(){if(!fdSel||!fdSel.k||!fdGet(fdSel.k))return '';const d=fdGet(fdSel.k),un=d.u;
+  const g=un&&fdSel.mode==='n'?(+fdSel.v||0)*d.u:(+fdSel.v||0),m=d.m.map(v=>Math.round(v*g/10)/10);
+  return `<div class="fd-pan"><div class="t" style="font-weight:600;font-size:17px">${esc(fdName(d))}</div>
+  <div class="inrow" style="align-items:center"><label class="muted small" for="fd-a" style="flex:none">${t('fdAmt')}</label><input class="field" id="fd-a" inputmode="decimal" value="${esc(fdSel.v)}" style="flex:1">
+  ${un?`<div class="chips" style="flex:none"><button data-act="fd-mode" data-v="g" aria-pressed="${fdSel.mode!=='n'}">${t('fdGram')}</button><button data-act="fd-mode" data-v="n" aria-pressed="${fdSel.mode==='n'}">${lang()==='ar'?d.un[0]:d.ue[0]}</button></div>`:`<span class="muted small" style="flex:none">${t('fdGram')}</span>`}</div>
+  <div class="nu-grid"><div><b class="num">${Math.round(m[0])}</b><span>${t('nuKcal')}</span></div><div><b class="num">${m[1]}${t('g')}</b><span>${t('nuP')}</span></div><div><b class="num">${m[2]}${t('g')}</b><span>${t('nuC')}</span></div><div><b class="num">${m[3]}${t('g')}</b><span>${t('nuF')}</span></div></div>
+  <button class="btn primary" data-act="fd-log" ${g>0?'':'disabled'}>${t('fdLog')}</button></div>`}
+function fdBody(){return `<input class="field" id="fd-q" placeholder="${esc(t('fdQ'))}" autocomplete="off" value="${esc(fdSel&&fdSel.q||'')}">
+  <div id="fd-p">${fdPanel()}</div><div class="list" id="fd-l">${fdList(fdSel&&fdSel.q)}</div>
+  <details class="list fd-cu"><summary style="padding:12px 14px;cursor:pointer">${t('fdCustom')}</summary><div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:8px">
+  <input class="field" id="cf-n" placeholder="${esc(t('fdCName'))}"><div class="muted small">${t('fdPer')}</div>
+  <div class="nu-in">${[['cf-k','nuKcal'],['cf-p','nuP'],['cf-c','nuC'],['cf-f','nuF']].map(([id,k])=>`<label><span class="muted small">${t(k)}</span><input class="field" id="${id}" inputmode="decimal"></label>`).join('')}</div>
+  <button class="btn" data-act="cf-save">${t('fdSave')}</button></div></details>`}
+function openFood(){fdSel={q:''};openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('fdCalc')}</h2></div></div><div class="tools" id="fd-b">${fdBody()}</div>`);setTimeout(()=>{const q=$('#fd-q');if(q)q.focus()},150)}
+const fdRe=()=>{const p_=$('#fd-p');if(p_)p_.innerHTML=fdPanel()};
+SH.addEventListener('input',e=>{const el=e.target;
+  if(el.id==='fd-q'){fdSel=Object.assign(fdSel||{},{q:el.value});$('#fd-l').innerHTML=fdList(el.value)}
+  if(el.id==='fd-a'&&fdSel){const v=normDigits(el.value);if(v!==el.value)el.value=v;fdSel.v=v;const g=$('#fd-p .nu-grid'),tmp=document.createElement('div');tmp.innerHTML=fdPanel();g.replaceWith(tmp.querySelector('.nu-grid'));const b=$('#fd-p [data-act="fd-log"]');if(b)b.disabled=!(+v>0)}});
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act]');if(!b)return;const A=b.dataset.act;
+  if(A==='fd-open')openFood();
+  if(A==='fd-pick'){const d=fdGet(b.dataset.k);fdSel=Object.assign(fdSel||{},{k:b.dataset.k,mode:d.u?'n':'g',v:d.u?'1':'100'});fdRe();SH.scrollTop=0;const a=$('#fd-a');if(a){a.focus();a.select()}}
+  if(A==='fd-mode'&&fdSel){const d=fdGet(fdSel.k);const g=fdSel.mode==='n'?(+fdSel.v||0)*d.u:(+fdSel.v||0);fdSel.mode=b.dataset.v;fdSel.v=String(b.dataset.v==='n'?Math.max(1,Math.round(g/d.u)):Math.round(g));fdRe()}
+  if(A==='fd-log'&&fdSel&&fdSel.k){const d=fdGet(fdSel.k),n=d.u&&fdSel.mode==='n'?+fdSel.v:0,a=n?n*d.u:+fdSel.v;if(!(a>0))return;
+    const F_=Object.assign({},S.profile.food||{}),k=todayK();F_[k]=(F_[k]||[]).concat([{k:fdSel.k,a,n:n||undefined}]);
+    const keys=Object.keys(F_).sort();while(keys.length>45)delete F_[keys.shift()];S.profile.food=F_;saveProfile();toast(t('fdAdded')+' ✓');fdSel={q:''};$('#fd-b').innerHTML=fdBody();if(tab==='home')render(true)}
+  if(A==='fd-del'){const F_=Object.assign({},S.profile.food||{}),k=todayK();F_[k]=(F_[k]||[]).filter((x,i)=>i!==+b.dataset.i);S.profile.food=F_;saveProfile();render(true)}
+  if(A==='cf-save'){const nm=$('#cf-n').value.trim(),v=['cf-k','cf-p','cf-c','cf-f'].map(id=>+normDigits($('#'+id).value)||0);if(!nm||!v[0]){toast(t('fdCName'));return}
+    const f={id:gid('cf'),ar:nm,en:nm,m:v};S.profile.customFood=(S.profile.customFood||[]).concat([f]);saveProfile();fdSel={q:'',k:f.id,mode:'g',v:'100'};$('#fd-b').innerHTML=fdBody()}});
 
 applyLang();render();
 initCloud().then(ok=>{if(!ok)setTimeout(initCloud,600)});
