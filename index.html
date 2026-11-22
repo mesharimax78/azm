@@ -145,7 +145,7 @@ details>summary::-webkit-details-marker{display:none}
 
 /* tab bar */
 .tabs{position:fixed;inset:auto 0 0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-.tabs nav{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+.tabs nav{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
 .tabs button{background:none;border:0;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:500}
 .tabs button svg{width:22px;height:22px}
 .tabs button[aria-current="page"]{color:var(--plate)}
@@ -885,6 +885,7 @@ function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTim
 function ask(msg,ok,danger,no){return new Promise(res=>{const M=$('#modal');M.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true"><p>${esc(msg)}</p><div class="row"><button class="btn" data-m="0">${esc(no||t('cancel'))}</button><button class="btn ${danger?'danger':'primary'}" data-m="1">${esc(ok)}</button></div></div>`;M.hidden=false;M.onclick=e=>{const b=e.target.closest('[data-m]');if(!b&&e.target!==M)return;M.hidden=true;M.onclick=null;res(!!b&&b.dataset.m==='1')}})}
 
 const I={
+ food:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.2 0-3.5 2.5-3.5 6v4H17"/></svg>',
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>',
  prog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
  hist:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
@@ -903,8 +904,8 @@ const I={
 let tab='home',progEx=null,histOpen=null;
 function topActs(){return `<div class="acts"><button class="icon-btn" data-act="tools" aria-label="${t('tools')}">${I.tools}</button><button class="icon-btn" data-act="lang" aria-label="${lang()==='ar'?'English':'العربية'}">${t('langBtn')}</button><button class="icon-btn" data-act="settings" aria-label="${t('settings')}">${I.gear}</button></div>`}
 function render(soft){
-  $('#tabs').innerHTML=[['home',t('today'),I.home],['prog',t('routines'),I.prog],['hist',t('history'),I.hist],['stats',t('progress'),I.chart],['body',t('body'),I.body]].map(([k,l,ic])=>`<button data-act="tab" data-v="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${l}</span></button>`).join('');
-  $('#view').innerHTML=tab==='home'?vHome():tab==='prog'?vProg():tab==='hist'?vHist():tab==='body'?vBody():vStats();
+  $('#tabs').innerHTML=[['home',t('today'),I.home],['food',t('foodTab'),I.food],['prog',t('routines'),I.prog],['hist',t('history'),I.hist],['stats',t('progress'),I.chart],['body',t('body'),I.body]].map(([k,l,ic])=>`<button data-act="tab" data-v="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${l}</span></button>`).join('');
+  $('#view').innerHTML=tab==='home'?vHome():tab==='prog'?vProg():tab==='hist'?vHist():tab==='body'?vBody():tab==='food'?vFood():vStats();
   const mini=$('#mini');mini.hidden=!S.profile.active||!$('#sheetW').hidden;
   if(S.profile.active)mini.innerHTML=`<span>${t('running')} · <span class="mono" id="mini-clock">${clock(Date.now()-S.profile.active.start)}</span></span><span>${t('resume')}</span>`;
   if(!soft)window.scrollTo(0,0);
@@ -922,9 +923,7 @@ function vHome(){
   ${homeExtras(ws)}
   ${wk.length?(()=>{const sv=mmP;mmP='w0';const c=mmCounts();mmP=sv;const z=Object.keys(SUB).filter(k=>k!=='cardio'&&!c[k]).map(subName);return `<div class="list"><button class="item" data-act="tab" data-v="stats" style="text-align:start"><div class="grow"><div class="t">${t('mmT')}</div><div class="meta"><span>${esc(z.length?t('mmSkip',z.join('، ')):t('mmAll'))}</span></div></div><span class="link">←</span></button></div>`})():''}
   ${heroCard(ws,p,n)}
-  ${mealsCard()}
-  ${nutriCard()}
-  ${foodCard()}
+  ${foodPeek()}
   ${mine.length?`<section><div class="sec-head"><h3>${t('myRoutines')}</h3><button class="link" data-act="tab" data-v="prog">${t('all')}</button></div><div class="list">${mine.slice(0,4).map(r=>`<button class="item" data-act="start" data-id="${r.id}"><div class="grow"><div class="t">${esc(L(r.name))}</div><div class="meta"><span>${t('exN',r.ex.length)}</span></div></div><span class="link">${t('start')}</span></button>`).join('')}</div></section>`:''}
   <section><div class="sec-head"><h3>${t('recent')}</h3>${ws.length?`<button class="link" data-act="tab" data-v="hist">${t('fullHistory')}</button>`:''}</div>
   ${ws.length?`<div class="list">${ws.slice(0,3).map(w=>`<button class="item" data-act="hist-open" data-id="${w.id}">${wRow(w)}</button>`).join('')}</div>`:`<div class="empty"><strong>${t('noWT')}</strong>${esc(t('noWB',L(n.name)))}</div>`}</section>`;
@@ -1714,11 +1713,11 @@ function mealsBody(){
   <button class="btn primary" data-act="meals-ics">${t('toCal')}</button>`;
 }
 function openMeals(){openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('mealsT')}</h2></div></div><div class="tools" id="meals-body">${mealsBody()}</div>`)}
-const mealsRe=()=>{const b=$('#meals-body');if(b)b.innerHTML=mealsBody();if(tab==='home')render(true)};
+const mealsRe=()=>{const b=$('#meals-body');if(b)b.innerHTML=mealsBody();if(tab==='home'||tab==='food')render(true)};
 SH.addEventListener('input',e=>{const el=e.target,ms=S.profile.meals;if(!ms)return;
   if(el.dataset.mealN!=null){const x=ms[+el.dataset.mealN];if(x){x.name=el.value;saveProfile()}}
   if(el.dataset.mealT!=null){const x=ms[+el.dataset.mealT];if(x&&el.value){x.time=el.value;saveProfile()}}});
-SH.addEventListener('change',e=>{const el=e.target;if(el.id==='meal-alert'){S.profile.mealAlert=el.checked;saveProfile()}if(el.dataset.mealN!=null||el.dataset.mealT!=null){if(tab==='home')render(true)}});
+SH.addEventListener('change',e=>{const el=e.target;if(el.id==='meal-alert'){S.profile.mealAlert=el.checked;saveProfile()}if(el.dataset.mealN!=null||el.dataset.mealT!=null){if(tab==='home'||tab==='food')render(true)}});
 document.addEventListener('change',e=>{if(e.target.id==='plan-time'&&e.target.value){S.profile.planTime=e.target.value;saveProfile()}});
 
 /* in-app meal alert */
@@ -1729,10 +1728,10 @@ function mealTick(){
     try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
     if(S.profile.settings.sound&&typeof actx!=='undefined'&&actx){try{if(actx.state==='suspended')actx.resume();[0,.2,.4].forEach((d,k)=>{const o=actx.createOscillator(),g=actx.createGain(),tt=actx.currentTime+d;o.frequency.value=[660,880,990][k];g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(.25,tt+.015);g.gain.exponentialRampToValueAtTime(.0001,tt+.25);o.connect(g).connect(actx.destination);o.start(tt);o.stop(tt+.28)})}catch(e){}}
     const f=$('#flash');if(f){f.innerHTML=`<div><b>${esc(t('mealNow',x.name))}</b><span>${t('mealTap')}</span></div>`;f.hidden=false;clearTimeout(mealTick.t);mealTick.t=setTimeout(()=>f.hidden=true,8000)}
-    if(tab==='home')render(true)}}
+    if(tab==='home'||tab==='food')render(true)}}
 }
 setInterval(mealTick,15000);
-setInterval(()=>{if(tab==='home'&&$('#sheetW').hidden&&SH.hidden&&(S.profile.meals||[]).length)render(true)},60000);
+setInterval(()=>{if((tab==='home'||tab==='food')&&$('#sheetW').hidden&&SH.hidden&&(S.profile.meals||[]).length)render(true)},60000);
 
 /* calendar (.ics) */
 function ics(evs){
@@ -1807,10 +1806,10 @@ function nuBody(){const o=nu(),m=macros(o),ch=(k,v,l)=>`<button data-act="nu-set
   <p class="muted small" style="margin:0">${t('nuNote')}</p>`}
 function openNu(){if(!S.profile.nutri){S.profile.nutri=nu();}openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${t('nuT')}</h2></div></div><div class="tools" id="nu-body">${nuBody()}</div>`)}
 SH.addEventListener('input',e=>{const el=e.target,k={'nu-age':'age','nu-h':'h','nu-w':'w'}[el.id];if(!k)return;const v=normDigits(el.value);if(v!==el.value)el.value=v;
-  S.profile.nutri=Object.assign(nu(),{[k]:v});saveProfile();const m=macros(nu()),o=$('#nu-out');if(o)o.innerHTML=m?nuGrid(m):`<p class="muted small" style="margin:0;padding:14px">${t('nuFill')}</p>`;if(tab==='home')render(true)});
+  S.profile.nutri=Object.assign(nu(),{[k]:v});saveProfile();const m=macros(nu()),o=$('#nu-out');if(o)o.innerHTML=m?nuGrid(m):`<p class="muted small" style="margin:0;padding:14px">${t('nuFill')}</p>`;if(tab==='home'||tab==='food')render(true)});
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act]');if(!b)return;
   if(b.dataset.act==='nu-open')openNu();
-  if(b.dataset.act==='nu-set'){S.profile.nutri=Object.assign(nu(),{[b.dataset.k]:b.dataset.k==='act'?+b.dataset.v:b.dataset.v});saveProfile();$('#nu-body').innerHTML=nuBody();if(tab==='home')render(true)}});
+  if(b.dataset.act==='nu-set'){S.profile.nutri=Object.assign(nu(),{[b.dataset.k]:b.dataset.k==='act'?+b.dataset.v:b.dataset.v});saveProfile();$('#nu-body').innerHTML=nuBody();if(tab==='home'||tab==='food')render(true)}});
 
 /* ---------- daily meal suggestions ---------- */
 Object.assign(T.ar,{sgT:'وجبات اليوم المقترحة',sgSwap:'غيّرها',sgTot:'مجموع اليوم',salad:'سلطة خضار',sgNote:'تتغير كل يوم. اضغط ↻ عشان تغيّر أي وجبة.'});
@@ -1943,10 +1942,26 @@ document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act]');i
   if(A==='fd-mode'&&fdSel){const d=fdGet(fdSel.k);const g=fdSel.mode==='n'?(+fdSel.v||0)*d.u:(+fdSel.v||0);fdSel.mode=b.dataset.v;fdSel.v=String(b.dataset.v==='n'?Math.max(1,Math.round(g/d.u)):Math.round(g));fdRe()}
   if(A==='fd-log'&&fdSel&&fdSel.k){const d=fdGet(fdSel.k),n=d.u&&fdSel.mode==='n'?+fdSel.v:0,a=n?n*d.u:+fdSel.v;if(!(a>0))return;
     const F_=Object.assign({},S.profile.food||{}),k=todayK();F_[k]=(F_[k]||[]).concat([{k:fdSel.k,a,n:n||undefined}]);
-    const keys=Object.keys(F_).sort();while(keys.length>45)delete F_[keys.shift()];S.profile.food=F_;saveProfile();toast(t('fdAdded')+' ✓');fdSel={q:''};$('#fd-b').innerHTML=fdBody();if(tab==='home')render(true)}
+    const keys=Object.keys(F_).sort();while(keys.length>45)delete F_[keys.shift()];S.profile.food=F_;saveProfile();toast(t('fdAdded')+' ✓');fdSel={q:''};$('#fd-b').innerHTML=fdBody();if(tab==='home'||tab==='food')render(true)}
   if(A==='fd-del'){const F_=Object.assign({},S.profile.food||{}),k=todayK();F_[k]=(F_[k]||[]).filter((x,i)=>i!==+b.dataset.i);S.profile.food=F_;saveProfile();render(true)}
   if(A==='cf-save'){const nm=$('#cf-n').value.trim(),v=['cf-k','cf-p','cf-c','cf-f'].map(id=>+normDigits($('#'+id).value)||0);if(!nm||!v[0]){toast(t('fdCName'));return}
     const f={id:gid('cf'),ar:nm,en:nm,m:v};S.profile.customFood=(S.profile.customFood||[]).concat([f]);saveProfile();fdSel={q:'',k:f.id,mode:'g',v:'100'};$('#fd-b').innerHTML=fdBody()}});
+
+/* ---------- food tab ---------- */
+Object.assign(T.ar,{foodTab:'الأكل',foodSub:'وجباتك وسعراتك',foodPeek:'الأكل',eatenOf:(a,b)=>'أكلت '+a+(b?' من '+b:'')+' سعرة'});
+Object.assign(T.en,{foodTab:'Food',foodSub:'Meals and calories',foodPeek:'Food',eatenOf:(a,b)=>a+(b?' of '+b:'')+' kcal eaten'});
+function vFood(){
+  return `<header class="top"><div><div class="eyebrow">${t('foodSub')}</div><h1>${t('foodTab')}</h1></div>${topActs()}</header>
+  ${foodCard()}
+  ${mealsCard()}
+  ${nutriCard()}`;
+}
+function foodPeek(){
+  const nm=nextMeal(),it=fdLog(),tg=S.profile.nutri?macros(nu()):null,kc=Math.round(fdSum(it)[0]);
+  if(!nm&&!it.length&&!tg)return '';
+  const parts=[];if(nm)parts.push(`${t('mealNext')}: ${esc(nm.m.name||t('mealName'))} · ${t12(nm.m.time)}`);if(it.length||tg)parts.push(t('eatenOf',kc,tg&&tg.kcal));
+  return `<div class="list"><button class="item" data-act="tab" data-v="food" style="text-align:start"><span style="flex:none;width:22px;height:22px;color:var(--plate)">${I.food}</span><div class="grow"><div class="t">${t('foodPeek')}</div><div class="meta"><span>${parts.join(' · ')}</span></div></div><span class="link">${lang()==='ar'?'‹':'›'}</span></button></div>`;
+}
 
 applyLang();render();
 initCloud().then(ok=>{if(!ok)setTimeout(initCloud,600)});
