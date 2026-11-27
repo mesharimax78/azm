@@ -143,10 +143,31 @@ details>summary::-webkit-details-marker{display:none}
 .day .acts .btn{flex:1;min-height:36px;padding:6px 10px;font-size:13px}
 .tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--plate-soft);color:var(--plate);white-space:nowrap}
 
+.tabs button .dot{position:absolute;top:6px;inset-inline-end:calc(50% - 16px);width:8px;height:8px;border-radius:50%;background:#e5484d}
+.soc-card{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.soc-card h3{margin:0}
+.soc-code{font-size:34px;font-weight:800;letter-spacing:.18em;text-align:center;padding:6px 0;color:var(--plate)}
+.soc-seg{margin-bottom:2px}
+.soc-seg .pill,.pill{display:inline-block;min-width:18px;padding:0 6px;border-radius:999px;background:#e5484d;color:#fff;font-size:11px;line-height:18px;text-align:center}
+.av{flex:none;width:38px;height:38px;border-radius:50%;background:var(--plate-soft);display:grid;place-items:center;font-size:20px}
+.av.sm{width:28px;height:28px;font-size:15px}
+.soc-row .rk{width:26px;text-align:center;font-weight:700;flex:none}
+.soc-row.me{background:var(--plate-soft)}
+.soc-ev{align-items:flex-start}
+.soc-re{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.soc-re .re{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:2px 10px;font-size:14px}
+.soc-re .re.on{border-color:var(--plate);background:var(--plate-soft)}
+.soc-crown{border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#f5c84233,#f5c84211);border:1px solid #f5c84266;font-weight:600}
+.soc-bar{display:flex;align-items:center;gap:10px}
+.soc-bar .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:4px}
+.soc-bar .bar b{display:block;height:100%;background:var(--plate);border-radius:99px}
+.soc-form{display:flex;flex-direction:column;gap:10px}
+.tgl{display:flex;gap:8px;align-items:center;font-size:14px}
+.err{color:#e5484d}
 /* tab bar */
 .tabs{position:fixed;inset:auto 0 0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-.tabs nav{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr)}
-.tabs button{background:none;border:0;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:500}
+.tabs nav{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr)}
+.tabs button{position:relative;background:none;border:0;padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;color:var(--muted);font-weight:500}
 .tabs button svg{width:22px;height:22px}
 .tabs button[aria-current="page"]{color:var(--plate)}
 .mini{position:fixed;z-index:19;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(64px + env(safe-area-inset-bottom,0px));max-width:616px;margin:0 auto;background:var(--plate);color:var(--plate-ink);border:0;border-radius:14px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18)}
@@ -886,6 +907,7 @@ function toast(m){const el=$('#toast');el.textContent=m;el.hidden=false;clearTim
 function ask(msg,ok,danger,no){return new Promise(res=>{const M=$('#modal');M.innerHTML=`<div class="modal-card" role="dialog" aria-modal="true"><p>${esc(msg)}</p><div class="row"><button class="btn" data-m="0">${esc(no||t('cancel'))}</button><button class="btn ${danger?'danger':'primary'}" data-m="1">${esc(ok)}</button></div></div>`;M.hidden=false;M.onclick=e=>{const b=e.target.closest('[data-m]');if(!b&&e.target!==M)return;M.hidden=true;M.onclick=null;res(!!b&&b.dataset.m==='1')}})}
 
 const I={
+ crew:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.9.2 5 2.2 5 5"/></svg>',
  food:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.2 0-3.5 2.5-3.5 6v4H17"/></svg>',
  home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>',
  prog:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
@@ -905,8 +927,8 @@ const I={
 let tab='home',progEx=null,histOpen=null;
 function topActs(){return `<div class="acts"><button class="icon-btn" data-act="tools" aria-label="${t('tools')}">${I.tools}</button><button class="icon-btn" data-act="lang" aria-label="${lang()==='ar'?'English':'العربية'}">${t('langBtn')}</button><button class="icon-btn" data-act="settings" aria-label="${t('settings')}">${I.gear}</button></div>`}
 function render(soft){
-  $('#tabs').innerHTML=[['home',t('today'),I.home],['food',t('foodTab'),I.food],['prog',t('routines'),I.prog],['hist',t('history'),I.hist],['stats',t('progress'),I.chart],['body',t('body'),I.body]].map(([k,l,ic])=>`<button data-act="tab" data-v="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${l}</span></button>`).join('');
-  $('#view').innerHTML=tab==='home'?vHome():tab==='prog'?vProg():tab==='hist'?vHist():tab==='body'?vBody():tab==='food'?vFood():vStats();
+  $('#tabs').innerHTML=[['home',t('today'),I.home],['food',t('foodTab'),I.food],['prog',t('routines'),I.prog],['hist',t('history'),I.hist],['stats',t('progress'),I.chart],['body',t('body'),I.body],['soc',lang()==='en'?'Crew':'الشلة',I.crew]].map(([k,l,ic])=>`<button data-act="tab" data-v="${k}" ${tab===k?'aria-current="page"':''}>${ic}<span>${l}</span>${k==='soc'&&typeof SOC!=='undefined'&&(SOC.newCnt>0||SOC.people.some(p=>p.status==='pending'&&p.incoming))?'<i class="dot"></i>':''}</button>`).join('');
+  $('#view').innerHTML=tab==='home'?vHome():tab==='prog'?vProg():tab==='hist'?vHist():tab==='body'?vBody():tab==='food'?vFood():tab==='soc'?vSoc():vStats();
   const mini=$('#mini');mini.hidden=!S.profile.active||!$('#sheetW').hidden;
   if(S.profile.active)mini.innerHTML=`<span>${t('running')} · <span class="mono" id="mini-clock">${clock(Date.now()-S.profile.active.start)}</span></span><span>${t('resume')}</span>`;
   if(!soft)window.scrollTo(0,0);
@@ -1181,7 +1203,7 @@ async function finishWorkout(){
   const w={id:a.id,name:a.name||t('free'),start:a.start,end:Date.now(),routineId:a.routineId,prog:a.prog,
     ex:a.ex.map(e=>({ex:e.ex,sets:e.sets.filter(s=>s.done).map(s=>({w:+s.w||0,r:+s.r||0,...(+s.bw?{bw:+s.bw}:{}),...(s.pr?{pr:true}:{}),...(s.k?{k:s.k}:{})})),...(e.ss?{ss:e.ss}:{})})).filter(e=>e.sets.length)};
   if(a.prog){S.profile.lastProgram=a.prog;S.profile.lastDay=Object.assign({},S.profile.lastDay,{[a.prog]:a.routineId})}
-  const b0=earnedBadges();S.profile.active=null;saveProfile();await saveWorkout(w);const nb=earnedBadges().filter(x=>!b0.includes(x));
+  const b0=earnedBadges();S.profile.active=null;saveProfile();await saveWorkout(w);if(typeof SOC!=='undefined'&&SOC.sess)socPush().then(()=>socLoad(true)).catch(()=>{});const nb=earnedBadges().filter(x=>!b0.includes(x));
   W.hidden=true;document.body.style.overflow='';$('#rest').hidden=true;restEnd=0;try{wl&&wl.release()}catch(e){}
   const prs=w.ex.reduce((n,e)=>n+e.sets.filter(s=>s.pr).length,0);
   openSheet(`<div class="sheet-head"><div class="grow"><h2>${t('doneT')}</h2><div class="muted small">${esc(w.name)} · ${dStr(w.end)}</div></div></div>
@@ -1964,7 +1986,271 @@ function foodPeek(){
   return `<div class="list"><button class="item" data-act="tab" data-v="food" style="text-align:start"><span style="flex:none;width:22px;height:22px;color:var(--plate)">${I.food}</span><div class="grow"><div class="t">${t('foodPeek')}</div><div class="meta"><span>${parts.join(' · ')}</span></div></div><span class="link">${lang()==='ar'?'‹':'›'}</span></button></div>`;
 }
 
-applyLang();render();
+/* ---------- social: friends, weekly board, feed, challenges ---------- */
+const SOC_URL='https://hdlpvzzgnvwpwrnbnxfl.supabase.co',SOC_KEY='sb_publishable__lko624RSJDnLhapv6-2cw_cSRbVaIg';
+const A_=(ar,en)=>lang()==='en'?en:ar;
+const SOC={sess:null,me:null,people:[],weekly:{},prev:{},feed:[],reacts:{},ch:[],chm:{},loaded:0,busy:false,err:'',seg:'board',mode:'signup',newCnt:0};
+const socOn=()=>!!(SOC_URL&&SOC_KEY);
+try{SOC.sess=JSON.parse(localStorage.getItem('azm.sess')||'null')}catch(e){}
+function socSaveSess(s){SOC.sess=s;try{s?localStorage.setItem('azm.sess',JSON.stringify(s)):localStorage.removeItem('azm.sess')}catch(e){}}
+async function sbAuth(path,body){
+  const r=await fetch(SOC_URL+'/auth/v1/'+path,{method:'POST',headers:{apikey:SOC_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.msg||j.error_description||j.message||('auth '+r.status)),{code:j.error_code||j.code||r.status});return j}
+function sessFrom(j){return {at:j.access_token,rt:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000,uid:j.user&&j.user.id}}
+async function sbToken(){
+  const s=SOC.sess;if(!s)return null;
+  if(Date.now()<s.exp-60000)return s.at;
+  try{const j=await sbAuth('token?grant_type=refresh_token',{refresh_token:s.rt});socSaveSess(sessFrom(j));return SOC.sess.at}
+  catch(e){if(e.code===400||e.code==='refresh_token_not_found'||/invalid|not found|revoked/i.test(e.message)){socSaveSess(null);SOC.me=null}throw e}
+}
+async function sb(path,opt={}){
+  const tk=await sbToken();if(!tk)throw new Error('signed_out');
+  const h={apikey:SOC_KEY,Authorization:'Bearer '+tk,'Content-Type':'application/json'};if(opt.prefer)h.Prefer=opt.prefer;
+  const r=await fetch(SOC_URL+'/rest/v1/'+path,{method:opt.method||(opt.body!==undefined?'POST':'GET'),headers:h,body:opt.body!==undefined?JSON.stringify(opt.body):undefined});
+  if(r.status===204)return null;const j=await r.json().catch(()=>null);
+  if(!r.ok)throw Object.assign(new Error((j&&(j.message||j.hint))||('db '+r.status)),{code:j&&j.code});return j}
+const rpc=(fn,args)=>sb('rpc/'+fn,{body:args||{}});
+const uMail=u=>u.toLowerCase()+'@users.azm-app.com';
+const dKey=ts=>{const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const wkKey=ts=>dKey(weekStart(ts));
+
+async function socSignup(u,name,pw){
+  u=u.trim().toLowerCase();
+  if(!/^[a-z0-9_]{3,20}$/.test(u))throw new Error(A_('اسم المستخدم: ٣ إلى ٢٠ حرف إنجليزي أو أرقام أو _','Username: 3–20 letters, digits or _'));
+  if(!name.trim())throw new Error(A_('اكتب اسمك','Enter your name'));
+  if(pw.length<6)throw new Error(A_('كلمة المرور ٦ خانات على الأقل','Password must be at least 6 characters'));
+  let j;try{j=await sbAuth('signup',{email:uMail(u),password:pw,data:{username:u}})}catch(e){if(/registered|exists/i.test(e.message))throw new Error(A_('اسم المستخدم مأخوذ','That username is taken'));throw e}
+  if(!j.access_token)j=await sbAuth('token?grant_type=password',{email:uMail(u),password:pw});
+  socSaveSess(sessFrom(j));
+  try{await sb('profiles',{body:{id:SOC.sess.uid,username:u,name:name.trim().slice(0,30),code:''},prefer:'return=minimal'})}
+  catch(e){if(e.code==='23505'){socSaveSess(null);throw new Error(A_('اسم المستخدم مأخوذ','That username is taken'))}throw e}
+  await socEvent('join',{},'join');
+}
+async function socLogin(u,pw){
+  try{const j=await sbAuth('token?grant_type=password',{email:uMail(u.trim()),password:pw});socSaveSess(sessFrom(j))}
+  catch(e){throw new Error(A_('اسم المستخدم أو كلمة المرور غلط','Wrong username or password'))}
+}
+function socLogout(){socSaveSess(null);Object.assign(SOC,{me:null,people:[],weekly:{},prev:{},feed:[],ch:[],chm:{},loaded:0})}
+
+async function socEvent(kind,data,uniq){
+  try{await sb('events?on_conflict=user_id,uniq',{body:{user_id:SOC.sess.uid,kind,data,uniq},prefer:'resolution=ignore-duplicates,return=minimal'})}catch(e){}
+}
+
+/* stats this app computes for the board */
+function socWeekStats(ts){
+  const w0=weekStart(ts),w1=w0+7*864e5,ws=sorted(),in_=ws.filter(w=>w.end>=w0&&w.end<w1);
+  let sets=0,vol=0,prs=0;in_.forEach(w=>{vol+=wVol(w);w.ex.forEach(e=>{sets+=e.sets.filter(isWork).length;prs+=e.sets.filter(s=>s.pr).length})});
+  const imp=[];const ids=new Set();in_.forEach(w=>w.ex.forEach(e=>ids.add(e.ex)));
+  ids.forEach(id=>{if(isCd(id)||isTm(id))return;let now=0,before=0;
+    ws.forEach(w=>w.ex.forEach(e=>{if(e.ex!==id)return;const m=Math.max(0,...e.sets.filter(isWork).map(s=>e1rm(effW(s),+s.r)));if(w.end>=w0&&w.end<w1)now=Math.max(now,m);else if(w.end<w0)before=Math.max(before,m)}));
+    if(now>0&&before>0)imp.push((now-before)/before*100)});
+  const improve=imp.length?Math.round(imp.reduce((a,b)=>a+b,0)/imp.length*10)/10:0;
+  const wk=weekList();let streak=0;
+  for(let i=wk.length-1;i>=0;i--){if(wk[i].s>w0)continue;if(wk[i].n>=goal())streak++;else if(wk[i].s<w0)break}
+  return {workouts:in_.length,goal:goal(),sets,volume:Math.round(vol),prs,improve,streak};
+}
+function socChProgress(c){
+  const a=new Date(c.starts+'T00:00:00').getTime(),b=new Date(c.ends+'T00:00:00').getTime()+864e5;
+  const ws=sorted().filter(w=>w.end>=a&&w.end<b);let v=0;
+  ws.forEach(w=>{if(c.metric==='workouts'){v++;return}w.ex.forEach(e=>{if(c.ex&&e.ex!==c.ex)return;e.sets.filter(isWork).forEach(s=>{if(c.metric==='sets')v++;else if(c.metric==='reps')v+=+s.r||0;else if(c.metric==='volume')v+=(effW(s)||0)*(+s.r||0)})})});
+  return Math.round(v);
+}
+
+/* push my numbers: weekly rows, new events, challenge progress */
+async function socPush(newW){
+  if(!socOn()||!SOC.sess)return;
+  const now=Date.now(),prevTs=weekStart(now)-3*864e5;
+  const rows=[now,prevTs].map(ts=>Object.assign({user_id:SOC.sess.uid,week:wkKey(ts),updated_at:new Date().toISOString()},socWeekStats(ts)));
+  await sb('weekly?on_conflict=user_id,week',{body:rows,prefer:'resolution=merge-duplicates,return=minimal'});
+  const share=!SOC.me||SOC.me.share_weights!==false;
+  const recent=sorted().filter(w=>now-w.end<3*864e5).slice(0,5);
+  for(const w of recent){
+    await socEvent('workout',{name:w.name,sets:wSets(w),min:Math.round((w.end-w.start)/60000),...(share?{vol:Math.round(wVol(w))}:{})},'w-'+w.id);
+    const best={};w.ex.forEach(e=>e.sets.filter(s=>s.pr).forEach(s=>{const v=e1rm(effW(s),+s.r);if(!best[e.ex]||v>best[e.ex].v)best[e.ex]={v,w:s.w,r:s.r}}));
+    for(const [ex,b] of Object.entries(best))await socEvent('pr',{ex,...(share?{w:b.w,r:b.r}:{})},'pr-'+w.id+'-'+ex);
+  }
+  const st=socWeekStats(now);if(st.streak>=2)await socEvent('streak',{n:st.streak},'st-'+wkKey(now)+'-'+st.streak);
+  const eb=earnedBadges(),seen=S.profile.socBadges;
+  if(seen){for(const id of eb.filter(x=>!seen.includes(x))){const b=BADGES.find(x=>x[0]===id);if(b)await socEvent('badge',{id,ic:b[1]},'b-'+id)}}
+  if(!seen||eb.length!==seen.length){S.profile.socBadges=eb;saveProfile()}
+  const today=dKey(now);
+  for(const c of SOC.ch){if(!(SOC.chm[c.id]||[]).some(m=>m.user_id===SOC.sess.uid))continue;if(c.ends<dKey(now-2*864e5))continue;
+    const p=socChProgress(c);await sb('challenge_members?challenge_id=eq.'+c.id+'&user_id=eq.'+SOC.sess.uid,{method:'PATCH',body:{progress:p,updated_at:new Date().toISOString()},prefer:'return=minimal'});
+    const mine=(SOC.chm[c.id]||[]).find(m=>m.user_id===SOC.sess.uid);if(mine)mine.progress=p;
+    if(c.target&&p>=c.target)await socEvent('challenge',{title:c.title,id:c.id},'ch-'+c.id)}
+}
+
+async function socLoad(force){
+  if(!socOn()||!SOC.sess||SOC.busy)return;if(!force&&Date.now()-SOC.loaded<20000)return;
+  SOC.busy=true;SOC.err='';
+  try{
+    const uid=SOC.sess.uid;
+    const [me]=await sb('profiles?id=eq.'+uid+'&select=*');SOC.me=me||null;
+    if(!SOC.me){SOC.busy=false;socRe();return}
+    SOC.people=await rpc('my_people')||[];
+    const fr=SOC.people.filter(p=>p.status==='accepted').map(p=>p.id),ids=[uid,...fr],inl='('+ids.join(',')+')';
+    const wk=wkKey(Date.now()),pw=wkKey(weekStart(Date.now())-3*864e5);
+    const wrows=await sb('weekly?user_id=in.'+inl+'&week=in.('+wk+','+pw+')&select=*')||[];
+    SOC.weekly={};SOC.prev={};wrows.forEach(r=>{(r.week===wk?SOC.weekly:SOC.prev)[r.user_id]=r});
+    SOC.feed=await sb('events?user_id=in.'+inl+'&order=created_at.desc&limit=60&select=*')||[];
+    SOC.reacts={};if(SOC.feed.length){const rs=await sb('reactions?event_id=in.('+SOC.feed.map(e=>e.id).join(',')+')&select=*')||[];rs.forEach(r=>{(SOC.reacts[r.event_id]=SOC.reacts[r.event_id]||[]).push(r)})}
+    SOC.ch=await sb('challenges?ends=gte.'+dKey(Date.now()-14*864e5)+'&order=ends.asc&select=*')||[];
+    SOC.chm={};if(SOC.ch.length){const ms=await sb('challenge_members?challenge_id=in.('+SOC.ch.map(c=>c.id).join(',')+')&select=*')||[];ms.forEach(m=>{(SOC.chm[m.challenge_id]=SOC.chm[m.challenge_id]||[]).push(m)})}
+    const others=new Set();Object.values(SOC.chm).flat().forEach(m=>{if(!ids.includes(m.user_id))others.add(m.user_id)});
+    SOC.extra={};if(others.size){const ps=await sb('profiles?id=in.('+[...others].join(',')+')&select=id,name,emoji,username')||[];ps.forEach(p=>SOC.extra[p.id]=p)}
+    SOC.loaded=Date.now();
+    const seen=S.profile.socSeen||0;const fresh=SOC.feed.filter(e=>e.user_id!==uid&&new Date(e.created_at).getTime()>seen);
+    SOC.newCnt=fresh.length;
+    if(fresh.length&&tab!=='soc'){const e=fresh[0];toast(socLine(e,true))}
+  }catch(e){SOC.err=e.message==='signed_out'?'':(e.message||'error')}
+  SOC.busy=false;socRe();
+}
+function socRe(){if(tab==='soc')render(true);else{const d=document.querySelector('[data-v="soc"] .dot');const want=SOC.newCnt>0||SOC.people.some(p=>p.status==='pending'&&p.incoming);if(!!d!==want)render(true)}}
+const socWho=id=>{if(SOC.me&&id===SOC.me.id)return SOC.me;return SOC.people.find(p=>p.id===id)||(SOC.extra||{})[id]||{name:'؟',emoji:'👤'}};
+function socLine(e,withName){
+  const p=socWho(e.user_id),n=withName?esc(p.name)+' ':'';const d=e.data||{};
+  switch(e.kind){
+    case 'pr':return `${n}${A_('حطم رقمه في','hit a PR on')} ${esc(exName(d.ex))}${d.w!=null?` <b dir="ltr">${fmt(d.w)}×${d.r}</b>`:''} 🔥`;
+    case 'workout':return `${n}${A_('خلّص تمرين','finished')} ${esc(d.name||'')} · ${d.sets} ${A_('مجموعة','sets')}${d.min?` · ${d.min} ${A_('د','min')}`:''}`;
+    case 'streak':return `${n}${A_(`ملتزم ${d.n} أسابيع ورا بعض`,`is on a ${d.n}-week streak`)} 🔥`;
+    case 'badge':{const b=BADGES.find(x=>x[0]===d.id);return `${n}${A_('حصل وسام','earned')} ${b?b[1]+' '+esc(bLabel(b)):''}`}
+    case 'challenge':return `${n}${A_('خلّص تحدي','completed the challenge')} «${esc(d.title)}» 🏁`;
+    case 'join':return `${n}${A_('انضم لعزم','joined Azm')} 👋`;
+  }return ''}
+const ago=ts=>{const m=Math.round((Date.now()-new Date(ts).getTime())/60000);if(m<1)return A_('الحين','now');if(m<60)return A_(`قبل ${m} د`,`${m}m`);const h=Math.round(m/60);if(h<24)return A_(`قبل ${h} س`,`${h}h`);return A_(`قبل ${Math.round(h/24)} يوم`,`${Math.round(h/24)}d`)};
+
+const BOARD=[['commit',A_('الالتزام','Consistency'),r=>r.goal?Math.round(r.workouts/r.goal*100):0,v=>v+'%'],
+  ['improve',A_('التحسّن','Improvement'),r=>+r.improve||0,v=>(v>0?'+':'')+fmt(v)+'%'],
+  ['prs',A_('الأرقام القياسية','PRs'),r=>r.prs,v=>v],
+  ['streak',A_('السلسلة','Streak'),r=>r.streak,v=>A_(v+' أسبوع',v+' wk')]];
+let socBoard='commit';
+function socRank(src,key){const f=BOARD.find(b=>b[0]===key)[2];const ids=[SOC.me.id,...SOC.people.filter(p=>p.status==='accepted').map(p=>p.id)];
+  return ids.map(id=>({id,r:src[id]||{workouts:0,goal:3,improve:0,prs:0,streak:0}})).map(x=>({...x,v:f(x.r)})).sort((a,b)=>b.v-a.v||b.r.workouts-a.r.workouts)}
+function socLastWinner(){const fr=SOC.people.filter(p=>p.status==='accepted');if(!fr.length)return '';
+  const r=socRank(SOC.prev,'commit');if(!r.length||r[0].v<=0)return '';const p=socWho(r[0].id);const me=r[0].id===SOC.me.id;
+  return `<div class="soc-crown">👑 ${me?A_('أنت كنت الأكثر التزامًا الأسبوع الماضي','You were the most consistent last week'):esc(p.name)+' '+A_('كان الأكثر التزامًا الأسبوع الماضي','was the most consistent last week')} <b dir="ltr">${r[0].v}%</b></div>`}
+
+function vSoc(){
+  const head=`<header class="top"><div><div class="eyebrow">${A_('تمرّن مع أصحابك','Train with friends')}</div><h1>${A_('الشلة','Crew')}</h1></div>${topActs()}</header>`;
+  if(!socOn())return head+`<section class="soc-card"><p>${A_('الأصدقاء والتحديات متاحة في تطبيق عزم على الجوال.','Friends and challenges live in the Azm phone app.')}</p><p class="muted small" dir="ltr">mesharimax78.github.io/azm</p></section>`;
+  if(!SOC.sess)return head+socAuthHtml();
+  if(!SOC.me){if(!SOC.busy&&!SOC.loaded)setTimeout(()=>socLoad(true),0);return head+(SOC.err?`<p class="muted">${esc(SOC.err)}</p><button class="btn" data-act="soc-reload">${A_('إعادة المحاولة','Retry')}</button>`:`<p class="muted">${A_('جاري التحميل…','Loading…')}</p>`)}
+  setTimeout(()=>socLoad(false),0);
+  if(SOC.seg==='feed'&&SOC.newCnt){S.profile.socSeen=Date.now();SOC.newCnt=0;saveProfile()}
+  const inc=SOC.people.filter(p=>p.status==='pending'&&p.incoming),out=SOC.people.filter(p=>p.status==='pending'&&!p.incoming),fr=SOC.people.filter(p=>p.status==='accepted');
+  const seg=[['board',A_('الأسبوع','This week')],['feed',A_('النشاط','Activity')+(SOC.newCnt?` <span class="pill">${SOC.newCnt}</span>`:'')],['ch',A_('التحديات','Challenges')],['crew',A_('أصحابي','Friends')+(inc.length?` <span class="pill">${inc.length}</span>`:'')]];
+  let body='';
+  if(SOC.seg==='board'){
+    if(!fr.length)body=socInviteHtml(true);
+    else{const r=socRank(SOC.weekly,socBoard),fx=BOARD.find(b=>b[0]===socBoard)[3];
+      body=`${socLastWinner()}<div class="chips">${BOARD.map(b=>`<button data-act="soc-board" data-v="${b[0]}" aria-pressed="${socBoard===b[0]}">${b[1]}</button>`).join('')}</div>
+      <div class="list">${r.map((x,i)=>{const p=socWho(x.id);return `<div class="item soc-row ${x.id===SOC.me.id?'me':''}"><span class="rk num">${i===0&&x.v>0?'🥇':i===1&&x.v>0?'🥈':i===2&&x.v>0?'🥉':i+1}</span><span class="av">${esc(p.emoji)}</span><div class="grow"><div class="t">${esc(p.name)}${x.id===SOC.me.id?` <span class="muted small">(${A_('أنت','you')})</span>`:''}</div><div class="muted small">${A_(`${x.r.workouts} من ${x.r.goal} تمارين`,`${x.r.workouts} of ${x.r.goal} workouts`)}</div></div><b class="num" dir="ltr">${fx(x.v)}</b></div>`}).join('')}</div>
+      <p class="muted small" style="margin:0">${A_('التحسّن يقارن أفضل أداء هالأسبوع بأفضل أداء قبله في نفس التمارين، فالمقارنة عادلة مهما كان وزنك.','Improvement compares this week\'s best lifts to your previous bests, so it\'s fair at any strength level.')}</p>`}
+  }else if(SOC.seg==='feed'){
+    body=SOC.feed.length?`<div class="list">${SOC.feed.map(e=>{const p=socWho(e.user_id),rs=SOC.reacts[e.id]||[],mine=rs.find(x=>x.user_id===SOC.me.id);
+      const cnt={};rs.forEach(x=>cnt[x.emoji]=(cnt[x.emoji]||0)+1);
+      return `<div class="item soc-ev"><span class="av">${esc(p.emoji)}</span><div class="grow"><div><b>${esc(p.name)}</b> ${socLine(e,false)}</div><div class="soc-re"><span class="muted small">${ago(e.created_at)}</span>${e.user_id===SOC.me.id?Object.entries(cnt).map(([k,v])=>`<span class="re on">${k} ${v}</span>`).join(''):['🔥','💪','👏'].map(k=>`<button class="re ${mine&&mine.emoji===k?'on':''}" data-act="soc-react" data-id="${e.id}" data-v="${k}">${k}${cnt[k]?' '+cnt[k]:''}</button>`).join('')}</div></div></div>`}).join('')}</div>`:`<p class="muted">${A_('ما فيه نشاط للحين.','No activity yet.')}</p>`;
+  }else if(SOC.seg==='ch'){
+    const today=dKey(Date.now());
+    body=`<button class="btn primary" data-act="soc-ch-new">${A_('+ تحدي جديد','+ New challenge')}</button>`+(SOC.ch.length?SOC.ch.map(c=>{const ms=(SOC.chm[c.id]||[]).slice().sort((a,b)=>b.progress-a.progress),inC=ms.some(m=>m.user_id===SOC.me.id),mx=Math.max(c.target||0,...ms.map(m=>+m.progress),1),over=c.ends<today;
+      const unit={workouts:A_('تمرين','workouts'),sets:A_('مجموعة','sets'),reps:A_('عدة','reps'),volume:A_('كجم','kg')}[c.metric];
+      const left=Math.round((new Date(c.ends+'T23:59:59')-Date.now())/864e5);
+      return `<section class="soc-card"><div class="sec-head"><h3>${esc(c.title)}</h3><span class="muted small">${over?A_('انتهى','Ended'):A_(`باقي ${left} يوم`,`${left} days left`)}</span></div>
+      <div class="muted small">${c.target?A_(`الهدف: ${fmt(c.target)} ${unit}`,`Goal: ${fmt(c.target)} ${unit}`):A_(`الأكثر ${unit} يفوز`,`Most ${unit} wins`)}${c.ex?' · '+esc(exName(c.ex)):''}</div>
+      ${ms.map((m,i)=>{const p=socWho(m.user_id);return `<div class="soc-bar"><span class="av sm">${esc(p.emoji)}</span><div class="grow"><div class="small">${esc(p.name)} ${over&&i===0&&m.progress>0?'👑':''}${c.target&&m.progress>=c.target?' ✅':''}</div><div class="bar"><b style="width:${Math.min(100,Math.round(m.progress/mx*100))}%"></b></div></div><span class="num small" dir="ltr">${fmt(m.progress)}</span></div>`}).join('')}
+      ${inC?(c.creator===SOC.me.id&&!over?`<button class="link small" data-act="soc-ch-del" data-id="${c.id}">${A_('حذف التحدي','Delete challenge')}</button>`:''):`<button class="btn" data-act="soc-ch-join" data-id="${c.id}">${A_('انضم للتحدي','Join challenge')}</button>`}</section>`}).join(''):`<p class="muted">${A_('ما فيه تحديات. سوّ واحد وأرسله لأصحابك.','No challenges yet. Start one for your friends.')}</p>`);
+  }else{
+    body=`${inc.length?`<h3>${A_('طلبات صداقة','Friend requests')}</h3><div class="list">${inc.map(p=>`<div class="item"><span class="av">${esc(p.emoji)}</span><div class="grow"><div class="t">${esc(p.name)}</div><div class="muted small" dir="ltr">@${esc(p.username)}</div></div><button class="btn primary sm" data-act="soc-ans" data-id="${p.id}" data-v="1">${A_('قبول','Accept')}</button><button class="btn sm" data-act="soc-ans" data-id="${p.id}" data-v="0">${A_('رفض','Decline')}</button></div>`).join('')}</div>`:''}
+    ${socInviteHtml(false)}
+    ${fr.length?`<h3>${A_('أصحابي','Friends')} <span class="muted num">${fr.length}</span></h3><div class="list">${fr.map(p=>`<div class="item"><span class="av">${esc(p.emoji)}</span><div class="grow"><div class="t">${esc(p.name)}</div><div class="muted small" dir="ltr">@${esc(p.username)}</div></div><button class="icon-btn" data-act="soc-unfriend" data-id="${p.id}" aria-label="${A_('حذف','Remove')}">${I.x}</button></div>`).join('')}</div>`:''}
+    ${out.length?`<div class="muted small">${A_('بانتظار الموافقة:','Waiting for:')} ${out.map(p=>esc(p.name)).join('، ')}</div>`:''}
+    <section class="soc-card"><h3>${A_('حسابي','My account')}</h3>
+      <div class="row"><input class="field" id="soc-name" value="${esc(SOC.me.name)}" maxlength="30"><input class="field" id="soc-emoji" value="${esc(SOC.me.emoji)}" maxlength="4" style="max-width:70px;text-align:center"></div>
+      <label class="tgl"><input type="checkbox" id="soc-share" ${SOC.me.share_weights!==false?'checked':''}> ${A_('أظهر الأوزان في أرقامي القياسية','Show weights on my PRs')}</label>
+      <div class="row"><button class="btn" data-act="soc-me-save">${A_('حفظ','Save')}</button><button class="btn" data-act="soc-logout">${A_('تسجيل خروج','Sign out')}</button></div>
+      <div class="muted small" dir="ltr">@${esc(SOC.me.username)}</div><button class="link small err" data-act="soc-delete">${A_('حذف حسابي نهائيًا','Delete my account')}</button></section>`;
+  }
+  return head+`<div class="chips soc-seg">${seg.map(([k,l])=>`<button data-act="soc-seg" data-v="${k}" aria-pressed="${SOC.seg===k}">${l}</button>`).join('')}</div>${SOC.err?`<p class="muted small">${esc(SOC.err)}</p>`:''}${body}`;
+}
+function socInviteHtml(intro){
+  return `<section class="soc-card">${intro?`<p style="margin:0">${A_('أضف أصحابك وتنافسوا على الالتزام والأرقام القياسية كل أسبوع.','Add friends and compete on consistency and PRs every week.')}</p>`:''}
+  <div class="muted small">${A_('كودك','Your code')}</div><div class="soc-code num" dir="ltr">${esc(SOC.me.code)}</div>
+  <button class="btn" data-act="soc-share">${A_('أرسل الكود لصاحبك','Send my code')}</button>
+  <div class="row"><input class="field" id="soc-code" placeholder="${A_('كود صاحبك','Friend\'s code')}" maxlength="6" autocapitalize="characters" autocomplete="off" dir="ltr" style="text-transform:uppercase"><button class="btn primary" data-act="soc-add">${A_('إضافة','Add')}</button></div></section>`;
+}
+function socAuthHtml(){
+  const up=SOC.mode==='signup';
+  return `<section class="soc-card"><h3>${up?A_('سوّ حسابك','Create your account'):A_('تسجيل الدخول','Sign in')}</h3>
+  <p class="muted small" style="margin:0">${A_('تمارينك تبقى على جوالك. اللي ينرفع بس ملخّص: عدد التمارين، الأرقام القياسية، والالتزام.','Your workouts stay on your phone. Only a summary is shared: workout count, PRs and consistency.')}</p>
+  <input class="field" id="soc-u" placeholder="${A_('اسم المستخدم (إنجليزي)','Username')}" autocomplete="username" autocapitalize="none" dir="ltr">
+  ${up?`<input class="field" id="soc-n" placeholder="${A_('اسمك اللي يشوفه أصحابك','Display name')}" maxlength="30">`:''}
+  <input class="field" id="soc-p" type="password" placeholder="${A_('كلمة المرور','Password')}" autocomplete="${up?'new-password':'current-password'}" dir="ltr">
+  <button class="btn primary" data-act="soc-auth" ${SOC.busy?'disabled':''}>${up?A_('إنشاء الحساب','Create account'):A_('دخول','Sign in')}</button>
+  ${SOC.err?`<p class="err small" style="margin:0">${esc(SOC.err)}</p>`:''}
+  <button class="link small" data-act="soc-mode">${up?A_('عندي حساب، سجّل دخول','I have an account'):A_('ما عندي حساب','Create an account')}</button></section>`;
+}
+function socChNew(){
+  const opts=EX.concat(S.profile.customEx||[]).filter(e=>!isCd(e.id)&&!isTm(e.id)).map(e=>`<option value="${e.id}">${esc(L(e.n))}</option>`).join('');
+  openSheet(`<div class="sheet-head"><button class="icon-btn" data-act="sheet-close" aria-label="${t('close')}">${I.x}</button><div class="grow"><h2>${A_('تحدي جديد','New challenge')}</h2></div></div>
+  <div class="soc-form">
+  <input class="field" id="ch-t" placeholder="${A_('اسم التحدي، مثلاً: ١٢ تمرين في الشهر','Challenge name, e.g. 12 workouts this month')}" maxlength="60">
+  <label class="small muted">${A_('نحسب إيش؟','What counts?')}</label>
+  <select class="field" id="ch-m"><option value="workouts">${A_('عدد التمارين','Workouts')}</option><option value="sets">${A_('عدد المجموعات','Sets')}</option><option value="reps">${A_('عدد العدّات في تمرين معيّن','Reps on one exercise')}</option><option value="volume">${A_('الحجم (كجم) في تمرين معيّن','Volume (kg) on one exercise')}</option></select>
+  <select class="field" id="ch-ex" hidden><option value="">${A_('اختر التمرين','Pick exercise')}</option>${opts}</select>
+  <label class="small muted">${A_('المدة','Duration')}</label>
+  <div class="chips" id="ch-d">${[[7,A_('أسبوع','1 week')],[14,A_('أسبوعين','2 weeks')],[30,A_('شهر','1 month')]].map(([d,l],i)=>`<button data-act="ch-dur" data-v="${d}" aria-pressed="${i===0}">${l}</button>`).join('')}</div>
+  <input class="field" id="ch-g" type="number" inputmode="numeric" placeholder="${A_('الهدف (اختياري). بدون هدف: الأعلى يفوز','Goal (optional). No goal = highest wins')}">
+  <button class="btn primary" data-act="soc-ch-create">${A_('ابدأ التحدي','Start challenge')}</button></div>`);
+}
+
+async function socAct(b,act){
+  try{switch(act){
+  case 'soc-mode':SOC.mode=SOC.mode==='signup'?'login':'signup';SOC.err='';render(true);break;
+  case 'soc-auth':{const u=$('#soc-u').value,p=$('#soc-p').value,n=$('#soc-n')?.value||'';SOC.busy=true;SOC.err='';render(true);
+    try{SOC.mode==='signup'?await socSignup(u,n,p):await socLogin(u,p);SOC.busy=false;await socLoad(true);await socPush();toast(A_('أهلًا في الشلة 👋','Welcome to the crew 👋'))}catch(e){SOC.busy=false;SOC.err=e.message;render(true)}break}
+  case 'soc-reload':socLoad(true);break;
+  case 'soc-seg':SOC.seg=b.dataset.v;render(true);break;
+  case 'soc-board':socBoard=b.dataset.v;render(true);break;
+  case 'soc-share':{const txt=A_(`ضيفني في عزم 💪 كودي: ${SOC.me.code}\nhttps://mesharimax78.github.io/azm/#add=${SOC.me.code}`,`Add me on Azm 💪 My code: ${SOC.me.code}\nhttps://mesharimax78.github.io/azm/#add=${SOC.me.code}`);
+    try{if(navigator.share){await navigator.share({text:txt});break}}catch(e){if(e&&e.name==='AbortError')break}
+    try{await navigator.clipboard.writeText(txt);toast(A_('انسخ الكود ✓','Copied ✓'))}catch(e){toast(SOC.me.code)}break}
+  case 'soc-add':{const c=($('#soc-code').value||'').trim().toUpperCase();if(c.length<4){toast(A_('اكتب الكود','Enter a code'));break}
+    const r=await rpc('add_friend',{p_code:c});toast({not_found:A_('ما لقينا هالكود','Code not found'),self:A_('هذا كودك 😄','That\'s your code 😄'),already:A_('صديقك من قبل','Already friends'),pending:A_('الطلب مرسل، ننتظر موافقته','Request already sent'),requested:A_('أرسلنا طلب الصداقة ✓','Request sent ✓'),accepted:A_('صرتوا أصحاب 🎉','You\'re now friends 🎉')}[r]||r);
+    if(r==='accepted')await socEvent('join',{},'join');await socLoad(true);break}
+  case 'soc-ans':await rpc('answer_friend',{p_other:b.dataset.id,p_accept:b.dataset.v==='1'});await socLoad(true);break;
+  case 'soc-unfriend':{const p=socWho(b.dataset.id);if(!await ask(A_(`تحذف ${p.name} من أصحابك؟`,`Remove ${p.name}?`),A_('حذف','Remove'),true))break;
+    const me=SOC.me.id,o=b.dataset.id,[a,c]=me<o?[me,o]:[o,me];await sb('friendships?a=eq.'+a+'&b=eq.'+c,{method:'DELETE'});await socLoad(true);break}
+  case 'soc-react':{const id=+b.dataset.id,v=b.dataset.v,rs=SOC.reacts[id]=SOC.reacts[id]||[],mine=rs.find(x=>x.user_id===SOC.me.id);
+    if(mine&&mine.emoji===v){rs.splice(rs.indexOf(mine),1);render(true);await sb('reactions?event_id=eq.'+id+'&user_id=eq.'+SOC.me.id,{method:'DELETE'})}
+    else{if(mine)mine.emoji=v;else rs.push({event_id:id,user_id:SOC.me.id,emoji:v});render(true);await sb('reactions?on_conflict=event_id,user_id',{body:{event_id:id,user_id:SOC.me.id,emoji:v},prefer:'resolution=merge-duplicates,return=minimal'})}break}
+  case 'soc-me-save':{const nm=$('#soc-name').value.trim().slice(0,30),em=($('#soc-emoji').value.trim()||'💪').slice(0,4),sh=$('#soc-share').checked;if(!nm)break;
+    await sb('profiles?id=eq.'+SOC.me.id,{method:'PATCH',body:{name:nm,emoji:em,share_weights:sh},prefer:'return=minimal'});Object.assign(SOC.me,{name:nm,emoji:em,share_weights:sh});toast(A_('انحفظ ✓','Saved ✓'));render(true);break}
+  case 'soc-delete':if(await ask(A_('يحذف حسابك وكل بياناتك في الشلة نهائيًا (تمارينك على جوالك تبقى). متأكد؟','This permanently deletes your account and crew data (workouts on this phone stay). Sure?'),A_('حذف نهائي','Delete'),true)){await rpc('delete_me');socLogout();render(true);toast(A_('انحذف الحساب','Account deleted'))}break;
+  case 'soc-logout':if(await ask(A_('تسجّل خروج من الشلة؟','Sign out?'),A_('خروج','Sign out'),true)){socLogout();render(true)}break;
+  case 'soc-ch-new':socChNew();break;
+  case 'ch-dur':$('#ch-d').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));break;
+  case 'soc-ch-create':{const ti=$('#ch-t').value.trim(),m=$('#ch-m').value,ex=$('#ch-ex').value||null,g=+$('#ch-g').value||null,d=+($('#ch-d [aria-pressed="true"]')?.dataset.v||7);
+    if(!ti){toast(A_('اكتب اسم التحدي','Name the challenge'));break}if((m==='reps'||m==='volume')&&!ex){toast(A_('اختر التمرين','Pick the exercise'));break}
+    const st=dKey(Date.now()),en=dKey(Date.now()+(d-1)*864e5);
+    const [c]=await sb('challenges',{body:{creator:SOC.me.id,title:ti,metric:m,ex:(m==='reps'||m==='volume')?ex:null,target:g,starts:st,ends:en},prefer:'return=representation'});
+    await sb('challenge_members',{body:{challenge_id:c.id,user_id:SOC.me.id,progress:socChProgress(c)},prefer:'return=minimal'});
+    closeSheet();SOC.seg='ch';await socLoad(true);toast(A_('بدأ التحدي 🏁 أصحابك يقدرون ينضمون','Challenge started 🏁'));break}
+  case 'soc-ch-join':{const c=SOC.ch.find(x=>x.id===b.dataset.id);await sb('challenge_members',{body:{challenge_id:c.id,user_id:SOC.me.id,progress:socChProgress(c)},prefer:'return=minimal'});await socLoad(true);break}
+  case 'soc-ch-del':if(await ask(A_('تحذف التحدي؟','Delete this challenge?'),A_('حذف','Delete'),true)){await sb('challenges?id=eq.'+b.dataset.id,{method:'DELETE'});await socLoad(true)}break;
+  }}catch(e){toast(e.message==='signed_out'?A_('سجّل دخول من جديد','Please sign in again'):A_('صار خطأ في الاتصال، جرّب بعدين','Connection problem, try again'));SOC.busy=false;render(true)}
+}
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act^="soc-"],[data-act="ch-dur"]');if(b){ev.stopPropagation();socAct(b,b.dataset.act)}},true);
+document.addEventListener('change',ev=>{if(ev.target.id==='ch-m'){const m=ev.target.value;$('#ch-ex').hidden=!(m==='reps'||m==='volume')}});
+function socBoot(){
+  if(!socOn())return;
+  const h=location.hash.match(/add=([A-Za-z0-9]{6})/);
+  if(h){history.replaceState(null,'',location.pathname);tab='soc';SOC.seg='crew';render();setTimeout(()=>{const f=$('#soc-code');if(f)f.value=h[1].toUpperCase();if(!SOC.sess)toast(A_('سوّ حسابك أول، بعدها أضف صاحبك','Create your account first, then add your friend'))},300)}
+  if(SOC.sess)socLoad(true).then(()=>socPush()).catch(()=>{});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&SOC.sess)socLoad(false)});
+  setInterval(()=>{if(!document.hidden&&SOC.sess)socLoad(false)},120000);
+}
+
+applyLang();render();socBoot();
 initCloud().then(ok=>{if(!ok)setTimeout(initCloud,600)});
 </script>
 
