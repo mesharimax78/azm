@@ -161,6 +161,7 @@ details>summary::-webkit-details-marker{display:none}
 .soc-bar{display:flex;align-items:center;gap:10px}
 .soc-bar .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:4px}
 .soc-bar .bar b{display:block;height:100%;background:var(--plate);border-radius:99px}
+.soc-bk{display:flex;gap:10px;align-items:center}
 .soc-form{display:flex;flex-direction:column;gap:10px}
 .tgl{display:flex;gap:8px;align-items:center;font-size:14px}
 .err{color:#e5484d}
@@ -842,10 +843,10 @@ function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
 let col=null,sync='syncLocal';
 let pTimer=null,pBusy=false,pDirty=false;
 const clone=o=>JSON.parse(JSON.stringify(o));
-function saveProfile(){saveLocal();if(!col)return;clearTimeout(pTimer);pTimer=setTimeout(()=>{pTimer=null;flushProfile()},700)}
+function saveProfile(){saveLocal();if(typeof SOC!=='undefined')SOC.bkDirty=true;if(!col)return;clearTimeout(pTimer);pTimer=setTimeout(()=>{pTimer=null;flushProfile()},700)}
 async function flushProfile(){if(pBusy){pDirty=true;return}pBusy=true;try{await col.doc('profile').set(clone(S.profile))}catch(e){dbErr(e)}pBusy=false;if(pDirty){pDirty=false;flushProfile()}}
-async function saveWorkout(w){S.workouts[w.id]=w;saveLocal();if(col){try{await col.doc(w.id).set(clone(w))}catch(e){dbErr(e)}}}
-async function deleteWorkout(id){delete S.workouts[id];saveLocal();if(col){try{await col.doc(id).delete()}catch(e){dbErr(e)}}}
+async function saveWorkout(w){S.workouts[w.id]=w;saveLocal();if(typeof socBackupSoon==='function')socBackupSoon(3000);if(col){try{await col.doc(w.id).set(clone(w))}catch(e){dbErr(e)}}}
+async function deleteWorkout(id){delete S.workouts[id];saveLocal();if(typeof socBackupSoon==='function')socBackupSoon(3000);if(col){try{await col.doc(id).delete()}catch(e){dbErr(e)}}}
 function dbErr(e){if(e&&e.code==='quota_exceeded')toast(t('quota'))}
 async function initCloud(){
   if(!window.claude||!window.claude.use)return false;
@@ -2169,6 +2170,8 @@ function vSoc(){
       <div class="row"><input class="field" id="soc-name" value="${esc(SOC.me.name)}" maxlength="30"><input class="field" id="soc-emoji" value="${esc(SOC.me.emoji)}" maxlength="4" style="max-width:70px;text-align:center"></div>
       <label class="tgl"><input type="checkbox" id="soc-share" ${SOC.me.share_weights!==false?'checked':''}> ${A_('أظهر الأوزان في أرقامي القياسية','Show weights on my PRs')}</label>
       <div class="row"><button class="btn" data-act="soc-me-save">${A_('حفظ','Save')}</button><button class="btn" data-act="soc-logout">${A_('تسجيل خروج','Sign out')}</button></div>
+      <div class="soc-bk"><div class="grow"><div class="t">${A_('النسخة الاحتياطية','Backup')}</div><div class="muted small">${SOC.bkAt?A_('آخر حفظ: ','Last saved: ')+ago(SOC.bkAt):A_('ما انحفظت للحين','Not saved yet')} · ${A_('تنحفظ تلقائيًا بعد كل تمرين (بدون الصور)','Saved automatically after each workout (photos not included)')}</div></div></div>
+      <div class="row"><button class="btn" data-act="soc-bk-now">${A_('احفظ الحين','Back up now')}</button><button class="btn" data-act="soc-bk-restore">${A_('استرجاع','Restore')}</button></div>
       <div class="muted small" dir="ltr">@${esc(SOC.me.username)}</div><button class="link small err" data-act="soc-delete">${A_('حذف حسابي نهائيًا','Delete my account')}</button></section>`;
   }
   return head+`<div class="chips soc-seg">${seg.map(([k,l])=>`<button data-act="soc-seg" data-v="${k}" aria-pressed="${SOC.seg===k}">${l}</button>`).join('')}</div>${SOC.err?`<p class="muted small">${esc(SOC.err)}</p>`:''}${body}`;
@@ -2208,7 +2211,7 @@ async function socAct(b,act){
   try{switch(act){
   case 'soc-mode':SOC.mode=SOC.mode==='signup'?'login':'signup';SOC.err='';render(true);break;
   case 'soc-auth':{const u=$('#soc-u').value,p=$('#soc-p').value,n=$('#soc-n')?.value||'';SOC.busy=true;SOC.err='';render(true);
-    try{SOC.mode==='signup'?await socSignup(u,n,p):await socLogin(u,p);SOC.busy=false;await socLoad(true);await socPush();toast(A_('أهلًا في الشلة 👋','Welcome to the crew 👋'))}catch(e){SOC.busy=false;SOC.err=e.message;render(true)}break}
+    try{SOC.mode==='signup'?await socSignup(u,n,p):await socLogin(u,p);SOC.busy=false;await socLoad(true);await socPush();await socBackupCheck();toast(A_('أهلًا في الشلة 👋','Welcome to the crew 👋'))}catch(e){SOC.busy=false;SOC.err=e.message;render(true)}break}
   case 'soc-reload':socLoad(true);break;
   case 'soc-seg':SOC.seg=b.dataset.v;render(true);break;
   case 'soc-board':socBoard=b.dataset.v;render(true);break;
@@ -2220,6 +2223,8 @@ async function socAct(b,act){
     if(r==='accepted')await socEvent('join',{},'join');await socLoad(true);break}
   case 'soc-report':{const p=socWho(b.dataset.id);if(!await ask(A_(`تبلّغ عن ${p.name} وتحذفه من أصحابك؟ بنراجع البلاغ.`,`Report ${p.name} and remove them? We'll review it.`),A_('إبلاغ وحذف','Report & remove'),true))break;
     await sb('reports',{body:{reporter:SOC.me.id,reported:b.dataset.id,reason:'user_report'},prefer:'return=minimal'});const me=SOC.me.id,o=b.dataset.id,[x,y]=me<o?[me,o]:[o,me];await sb('friendships?a=eq.'+x+'&b=eq.'+y,{method:'DELETE'});toast(A_('وصل البلاغ، شكرًا','Report sent, thanks'));await socLoad(true);break}
+  case 'soc-bk-now':toast(await socBackup()?A_('انحفظت النسخة ✓','Backed up ✓'):A_('ما قدرنا نحفظ، جرّب بعدين','Backup failed, try later'));render(true);break;
+  case 'soc-bk-restore':if(await ask(A_('نرجّع بياناتك من النسخة الاحتياطية؟ تمارينك الحالية تبقى وتنضاف لها.','Restore from your backup? Current workouts are kept and merged.'),A_('استرجاع','Restore'))){toast(await socRestore()?A_('رجعت بياناتك ✓','Restored ✓'):A_('ما فيه نسخة احتياطية','No backup found'))}break;
   case 'soc-ans':await rpc('answer_friend',{p_other:b.dataset.id,p_accept:b.dataset.v==='1'});await socLoad(true);break;
   case 'soc-unfriend':{const p=socWho(b.dataset.id);if(!await ask(A_(`تحذف ${p.name} من أصحابك؟`,`Remove ${p.name}?`),A_('حذف','Remove'),true))break;
     const me=SOC.me.id,o=b.dataset.id,[a,c]=me<o?[me,o]:[o,me];await sb('friendships?a=eq.'+a+'&b=eq.'+c,{method:'DELETE'});await socLoad(true);break}
@@ -2244,11 +2249,40 @@ async function socAct(b,act){
 }
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-act^="soc-"],[data-act="ch-dur"]');if(b){ev.stopPropagation();socAct(b,b.dataset.act)}},true);
 document.addEventListener('change',ev=>{if(ev.target.id==='ch-m'){const m=ev.target.value;$('#ch-ex').hidden=!(m==='reps'||m==='volume')}});
+/* cloud backup of the whole log (signed-in crew members) */
+let bkT=null;
+function socBackupSoon(ms){if(!socOn()||!SOC.sess)return;clearTimeout(bkT);bkT=setTimeout(socBackup,ms||3000)}
+async function socBackup(){
+  if(!socOn()||!SOC.sess)return false;
+  try{const data={v:1,profile:Object.assign({},S.profile,{active:null}),workouts:S.workouts};
+    await sb('backups?on_conflict=user_id',{body:{user_id:SOC.sess.uid,data,workouts:Object.keys(S.workouts).length,updated_at:new Date().toISOString()},prefer:'resolution=merge-duplicates,return=minimal'});
+    SOC.bkDirty=false;SOC.bkAt=Date.now();try{localStorage.setItem('azm.bkAt',String(SOC.bkAt))}catch(e){}return true}catch(e){return false}
+}
+async function socRestore(){
+  const r=await sb('backups?user_id=eq.'+SOC.sess.uid+'&select=data');const b=r&&r[0];if(!b||!b.data)return false;
+  const d=b.data,act=S.profile.active;
+  S.workouts=Object.assign({},d.workouts||{},S.workouts);
+  S.profile=Object.assign({routines:[],customEx:[],lastDay:{}},d.profile||{},{active:act});
+  S.profile.settings=Object.assign({rest:90,sound:true,lang:'ar'},S.profile.settings);
+  saveLocal();render(true);return true;
+}
+async function socBackupCheck(){
+  try{const r=await sb('backups?user_id=eq.'+SOC.sess.uid+'&select=workouts,updated_at');const b=r&&r[0];const local=Object.keys(S.workouts).length;
+    if(b&&b.workouts>local){
+      if(await ask(A_(`لقينا نسخة احتياطية في حسابك فيها ${b.workouts} تمرين، وعلى هالجوال ${local}. نرجّعها؟`,`Found a backup with ${b.workouts} workouts (this phone has ${local}). Restore it?`),A_('استرجاع','Restore'),false,A_('لا','No'))){
+        if(await socRestore()){toast(A_('رجعت بياناتك ✓','Your data is back ✓'));return}}
+      return}
+    socBackup();
+  }catch(e){}
+}
+try{SOC.bkAt=+localStorage.getItem('azm.bkAt')||0}catch(e){}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&SOC.sess&&SOC.bkDirty)socBackup()});
+
 function socBoot(){
   if(!socOn())return;
   const h=location.hash.match(/add=([A-Za-z0-9]{6})/);
   if(h){history.replaceState(null,'',location.pathname);tab='soc';SOC.seg='crew';render();setTimeout(()=>{const f=$('#soc-code');if(f)f.value=h[1].toUpperCase();if(!SOC.sess)toast(A_('سوّ حسابك أول، بعدها أضف صاحبك','Create your account first, then add your friend'))},300)}
-  if(SOC.sess)socLoad(true).then(()=>socPush()).catch(()=>{});
+  if(SOC.sess)socLoad(true).then(()=>socPush()).then(()=>{if(!SOC.bkAt||Date.now()-SOC.bkAt>864e5)socBackupCheck()}).catch(()=>{});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&SOC.sess)socLoad(false)});
   setInterval(()=>{if(!document.hidden&&SOC.sess)socLoad(false)},120000);
 }
