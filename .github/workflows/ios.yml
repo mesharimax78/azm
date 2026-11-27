@@ -22,15 +22,12 @@ jobs:
             echo "Apple secrets not set yet — skipping iOS build."; echo "ok=false" >> $GITHUB_OUTPUT
           else echo "ok=true" >> $GITHUB_OUTPUT; fi
       - uses: actions/setup-node@v4
-        if: steps.chk.outputs.ok == 'true'
         with: { node-version: 20 }
       - name: Prepare web assets
-        if: steps.chk.outputs.ok == 'true'
         run: |
           mkdir -p app/www
           cp -r index.html cal.html manifest.webmanifest img icons videos app/www/
       - name: Create iOS project
-        if: steps.chk.outputs.ok == 'true'
         working-directory: app
         run: |
           npm install
@@ -63,3 +60,9 @@ jobs:
           xcodebuild -exportArchive -archivePath $RUNNER_TEMP/App.xcarchive -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist \
             -exportPath $RUNNER_TEMP/out $AUTH
           echo "Uploaded build $BUILD to App Store Connect → TestFlight"
+      - name: Test build (no Apple account yet)
+        if: steps.chk.outputs.ok != 'true'
+        working-directory: app
+        run: |
+          if [ -d ios/App/App.xcworkspace ]; then SRC="-workspace ios/App/App.xcworkspace"; else SRC="-project ios/App/App.xcodeproj"; fi
+          xcodebuild $SRC -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build CODE_SIGNING_ALLOWED=NO | tail -5
