@@ -1543,7 +1543,8 @@ document.addEventListener('click',async ev=>{
 
 /* ---------- PWA ---------- */
 let instEvt=null;
-const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isNative=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const isStandalone=()=>isNative()||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function installBanner(){
   if(isStandalone())return '';let snooze=0;try{snooze=+localStorage.getItem('azm.inst')||0}catch(e){}if(snooze>Date.now())return '';
@@ -1567,7 +1568,7 @@ document.addEventListener('change',async e=>{
   try{const txt=await e.target.files[0].text();const el=$('#imp');if(el){el.value=txt;document.querySelector('[data-act="import"]').click()}}catch(err){toast(t('badBackup'))}
   e.target.value='';
 });
-if('serviceWorker' in navigator){let _rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(_rl)return;_rl=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{})})}).catch(()=>{})})}
+if('serviceWorker' in navigator&&!isNative()){let _rl=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(_rl)return;_rl=true;location.reload()});window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{})})}).catch(()=>{})})}
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 setTimeout(phLoadAll,500);
 

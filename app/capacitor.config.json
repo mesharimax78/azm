@@ -1,0 +1,11 @@
+{
+  "appId": "com.mesharimax78.azm",
+  "appName": "عزم",
+  "webDir": "www",
+  "backgroundColor": "#0f1115",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0f1115",
+    "scheme": "Azm"
+  }
+}
