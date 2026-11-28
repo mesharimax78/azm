@@ -843,7 +843,7 @@ function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
 let col=null,sync='syncLocal';
 let pTimer=null,pBusy=false,pDirty=false;
 const clone=o=>JSON.parse(JSON.stringify(o));
-function saveProfile(){saveLocal();if(typeof SOC!=='undefined')SOC.bkDirty=true;if(!col)return;clearTimeout(pTimer);pTimer=setTimeout(()=>{pTimer=null;flushProfile()},700)}
+function saveProfile(){if(S.profile.active&&!autoBusy)S.profile.active.lastAct=Date.now();saveLocal();if(typeof SOC!=='undefined')SOC.bkDirty=true;if(!col)return;clearTimeout(pTimer);pTimer=setTimeout(()=>{pTimer=null;flushProfile()},700)}
 async function flushProfile(){if(pBusy){pDirty=true;return}pBusy=true;try{await col.doc('profile').set(clone(S.profile))}catch(e){dbErr(e)}pBusy=false;if(pDirty){pDirty=false;flushProfile()}}
 async function saveWorkout(w){S.workouts[w.id]=w;saveLocal();if(typeof socBackupSoon==='function')socBackupSoon(3000);if(col){try{await col.doc(w.id).set(clone(w))}catch(e){dbErr(e)}}}
 async function deleteWorkout(id){delete S.workouts[id];saveLocal();if(typeof socBackupSoon==='function')socBackupSoon(3000);if(col){try{await col.doc(id).delete()}catch(e){dbErr(e)}}}
@@ -1194,6 +1194,26 @@ function tick(){
 }
 setInterval(tick,1000);
 
+function buildW(a,end){return {id:a.id,name:a.name||t('free'),start:a.start,end,routineId:a.routineId,prog:a.prog,
+    ex:a.ex.map(e=>({ex:e.ex,sets:e.sets.filter(s=>s.done).map(s=>({w:+s.w||0,r:+s.r||0,...(+s.bw?{bw:+s.bw}:{}),...(s.pr?{pr:true}:{}),...(s.k?{k:s.k}:{})})),...(e.ss?{ss:e.ss}:{})})).filter(e=>e.sets.length)}}
+/* auto-close a workout left open: 2 hours with no activity -> save it (ending at the last activity) */
+var autoBusy=false;const AUTO_MS=2*3600*1000;
+async function autoCloseWorkout(){
+  const a=S.profile.active;if(!a||autoBusy)return;if(!a.lastAct){a.lastAct=Date.now();saveLocal();return}const last=a.lastAct;if(Date.now()-last<AUTO_MS)return;
+  autoBusy=true;try{
+    const done=a.ex.reduce((n,e)=>n+e.sets.filter(s=>s.done).length,0);
+    const wasOpen=!W.hidden;
+    if(!done){S.profile.active=null;saveProfile();if(wasOpen)closeW();render(true);toast(lang()==='en'?'An empty workout left open was discarded':'انحذف تمرين مفتوح ما سجّلت فيه شي');return}
+    const w=buildW(a,last);
+    if(a.prog){S.profile.lastProgram=a.prog;S.profile.lastDay=Object.assign({},S.profile.lastDay,{[a.prog]:a.routineId})}
+    S.profile.active=null;saveProfile();await saveWorkout(w);
+    if(typeof SOC!=='undefined'&&SOC.sess)socPush().then(()=>socLoad(true)).catch(()=>{});
+    if(wasOpen){W.hidden=true;document.body.style.overflow='';$('#rest').hidden=true;restEnd=0;try{wl&&wl.release()}catch(e){}}
+    render(true);toast(lang()==='en'?'Workout auto-saved after 2 hours of no activity ✓':'تمرينك انقفل وانحفظ تلقائيًا بعد ساعتين بدون نشاط ✓');
+  }finally{autoBusy=false}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoCloseWorkout()});
+setInterval(autoCloseWorkout,5*60*1000);
 async function finishWorkout(){
   const a=S.profile.active;
   const filled=[];a.ex.forEach(e=>e.sets.forEach(s=>{if(!s.done&&+s.r>0)filled.push(s)}));
@@ -1201,8 +1221,7 @@ async function finishWorkout(){
   const done=a.ex.reduce((n,e)=>n+e.sets.filter(s=>s.done).length,0),all=a.ex.reduce((n,e)=>n+e.sets.length,0);
   if(!done){if(await ask(t('noneDone'),t('discardBtn'),true)){S.profile.active=null;saveProfile();closeW()}else renderW();return}
   if(done<all&&!await ask(t('leftQ',all-done),t('finish'))){renderW();return}
-  const w={id:a.id,name:a.name||t('free'),start:a.start,end:Date.now(),routineId:a.routineId,prog:a.prog,
-    ex:a.ex.map(e=>({ex:e.ex,sets:e.sets.filter(s=>s.done).map(s=>({w:+s.w||0,r:+s.r||0,...(+s.bw?{bw:+s.bw}:{}),...(s.pr?{pr:true}:{}),...(s.k?{k:s.k}:{})})),...(e.ss?{ss:e.ss}:{})})).filter(e=>e.sets.length)};
+  const w=buildW(a,Date.now());
   if(a.prog){S.profile.lastProgram=a.prog;S.profile.lastDay=Object.assign({},S.profile.lastDay,{[a.prog]:a.routineId})}
   const b0=earnedBadges();S.profile.active=null;saveProfile();await saveWorkout(w);if(typeof SOC!=='undefined'&&SOC.sess)socPush().then(()=>socLoad(true)).catch(()=>{});const nb=earnedBadges().filter(x=>!b0.includes(x));
   W.hidden=true;document.body.style.overflow='';$('#rest').hidden=true;restEnd=0;try{wl&&wl.release()}catch(e){}
@@ -2287,7 +2306,7 @@ function socBoot(){
   setInterval(()=>{if(!document.hidden&&SOC.sess)socLoad(false)},120000);
 }
 
-applyLang();render();socBoot();
+applyLang();render();socBoot();setTimeout(autoCloseWorkout,800);
 initCloud().then(ok=>{if(!ok)setTimeout(initCloud,600)});
 </script>
 
