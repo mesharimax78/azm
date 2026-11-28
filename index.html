@@ -1203,13 +1203,13 @@ async function autoCloseWorkout(){
   autoBusy=true;try{
     const done=a.ex.reduce((n,e)=>n+e.sets.filter(s=>s.done).length,0);
     const wasOpen=!W.hidden;
-    if(!done){S.profile.active=null;saveProfile();if(wasOpen)closeW();render(true);toast(lang()==='en'?'An empty workout left open was discarded':'انحذف تمرين مفتوح ما سجّلت فيه شي');return}
+    if(!done){S.profile.active=null;saveProfile();if(wasOpen)closeW();render(true);toast(lang()==='en'?'We ended your workout; nothing to save since no sets were done':'أنهينا تمرينك، وما حفظناه لأنه ما فيه مجموعات');return}
     const w=buildW(a,last);
     if(a.prog){S.profile.lastProgram=a.prog;S.profile.lastDay=Object.assign({},S.profile.lastDay,{[a.prog]:a.routineId})}
     S.profile.active=null;saveProfile();await saveWorkout(w);
     if(typeof SOC!=='undefined'&&SOC.sess)socPush().then(()=>socLoad(true)).catch(()=>{});
     if(wasOpen){W.hidden=true;document.body.style.overflow='';$('#rest').hidden=true;restEnd=0;try{wl&&wl.release()}catch(e){}}
-    render(true);toast(lang()==='en'?'Workout auto-saved after 2 hours of no activity ✓':'تمرينك انقفل وانحفظ تلقائيًا بعد ساعتين بدون نشاط ✓');
+    render(true);toast(lang()==='en'?'We finished and saved your workout ✓':'أنهينا تمرينك وحفظناه ✓');
   }finally{autoBusy=false}
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoCloseWorkout()});
